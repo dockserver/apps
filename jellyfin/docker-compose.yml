@@ -12,8 +12,13 @@ services:
       - "DOCKER_MODS=ghcr.io/gilbn/theme.park:jellyfin"
       - "TP_THEME=${JELLYFINTHEME}"
       - "JELLYFIN_PublishedServerUrl=jellyfin.${DOMAIN}"
+      ##- "NVIDIA_VISIBLE_DEVICES=all"
+      ##- "NVIDIA_DRIVER_CAPABILITIES=all"
     image: "${JELLYFINIMAGE}"
     restart: "${RESTARTAPP}"
+    ##devices:
+    ##   - "/dev/dri:/dev/dri"
+    ##runtime: "nvidia"
     networks:
       - ${DOCKERNETWORK}
     security_opt:
