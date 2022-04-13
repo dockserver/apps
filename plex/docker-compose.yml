@@ -15,17 +15,13 @@ services:
       - "DOCKER_MODS=ghcr.io/gilbn/theme.park:plex"
       - "TP_THEME=${PLEXTHEME}"
       - "TP_ADDON=${PLEXADDON}"
-      - "NVIDIA_VISIBLE_DEVICES=all"
-      - "NVIDIA_DRIVER_CAPABILITIES=all"
+      ##- "NVIDIA_VISIBLE_DEVICES=all"
+      ##- "NVIDIA_DRIVER_CAPABILITIES=all"
     image: "${PLEXIMAGE}"
     restart: "${RESTARTAPP}"
-    {% if -Z '/dev/dri' %}
-    devices:
-      - "/dev/dri:/dev/dri"
-    {% endif %}
-    {% if nvidia-smi &>/dev/null %}
-    runtime: "nvidia"
-    {% endif %}
+    ##devices:
+    ##   - "/dev/dri:/dev/dri"
+    ##runtime: "nvidia"
     networks:
       - ${DOCKERNETWORK}
     security_opt:
