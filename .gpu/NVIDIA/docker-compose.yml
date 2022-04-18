@@ -5,9 +5,9 @@ services:
     deploy:
       resources:
         reservations:
-           devices:
-             - capabilities:
-             - gpu
+          devices:
+            - capabilities:
+              - gpu
     environment:
       - "NVIDIA_VISIBLE_DEVICES=all"
       - "NVIDIA_DRIVER_CAPABILITIES=all"
