@@ -1,0 +1,28 @@
+---
+version: '3.3'
+services:
+  authelia:
+    container_name: 'authelia'
+    image: 'authelia/authelia:latest'
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    volumes:
+      - '${APPFOLDER}/authelia:/config'
+    environment:
+      - 'PGID=${ID}'
+      - 'PUID=${ID}'
+      - 'TZ=${TZ}'
+    labels:
+      - 'traefik.enable=true'
+      - 'dockupdater.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'traefik.http.routers.authelia-rtr.entrypoints=https'
+      - 'traefik.http.routers.authelia-rtr.rule=Host(`authelia.${DOMAIN}`)'
+      - 'traefik.http.routers.authelia-rtr.tls=true'
+      - 'traefik.http.routers.authelia-rtr.service=authelia-svc'
+      - 'traefik.http.services.authelia-svc.loadbalancer.server.port=9091'
+networks:
+  proxy:
+    driver: bridge
+    external: true
