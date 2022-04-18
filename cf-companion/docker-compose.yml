@@ -1,0 +1,34 @@
+---
+version: '3.3'
+services:
+  cf-companion:
+    container_name: 'cf-companion'
+    image: 'tiredofit/traefik-cloudflare-companion:latest'
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - '${SECURITYOPS}:${SECURITYOPSSET}'
+    restart: "${RESTARTAPP}"
+    labels:
+      - 'dockupdater.enable=true'
+    volumes:
+      - '${SOCKET}:${SOCKET}:ro'
+    environment:
+      - 'TIMEZONE=${TZ}'
+      - 'TRAEFIK_VERSION=2'
+      - 'CF_EMAIL=${CLOUDFLARE_EMAIL}'
+      - 'CF_TOKEN=${CLOUDFLARE_API_KEY}'
+      - 'TARGET_DOMAIN=${DOMAIN}'
+      - 'DOMAIN1=${DOMAIN}'
+      - 'DOMAIN1_ZONE_ID=${DOMAIN1_ZONE_ID}'
+      - 'DOMAIN1_PROXIED=TRUE'
+      - 'DEFAULT_TTL=1'
+      - 'REFRESH_ENTRIES=TRUE'
+      - 'DOCKER_ENTRYPOINT=unix://var/run/docker.sock'
+      - 'SWARM_MODE=FALSE'
+    labels:
+      - 'dockupdater.enable=true'
+networks:
+  proxy:
+    driver: bridge
+    external: true
