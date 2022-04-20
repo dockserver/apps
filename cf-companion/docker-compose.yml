@@ -14,21 +14,25 @@ services:
     volumes:
       - '${SOCKET}:${SOCKET}:ro'
     environment:
-      - 'TIMEZONE=${TZ}'
-      - 'TRAEFIK_VERSION=2'
       - 'CF_EMAIL=${CLOUDFLARE_EMAIL}'
       - 'CF_TOKEN=${CLOUDFLARE_API_KEY}'
-      - 'TARGET_DOMAIN=${DOMAIN}'
+      - 'DEFAULT_TTL=1'
+      - 'DOCKER_HOST=tcp://docker-socket-proxy:2375'
       - 'DOMAIN1=${DOMAIN}'
       - 'DOMAIN1_ZONE_ID=${DOMAIN1_ZONE_ID}'
       - 'DOMAIN1_PROXIED=TRUE'
-      - 'DEFAULT_TTL=1'
-      - 'REFRESH_ENTRIES=TRUE'
       - 'DOCKER_ENTRYPOINT=unix://var/run/docker.sock'
+      - 'ENABLE_TRAEFIK_POLL=TRUE'
+      - 'REFRESH_ENTRIES=TRUE'
       - 'SWARM_MODE=FALSE'
+      - 'TARGET_DOMAIN=${DOMAIN}'
+      - 'TIMEZONE=${TZ}'
+      - 'TRAEFIK_VERSION=2'
+      - 'TRAEFIK_POLL_URL=http://traefik:80'
     labels:
       - 'dockupdater.enable=true'
 networks:
   proxy:
-    driver: bridge
+    external: true
+  docker_socket:
     external: true
