@@ -2,7 +2,7 @@
 version: "3"
 services:
   socket-proxy:
-    image: "ghcr.io/tecnativa/docker-socket-proxy:latest"
+    image: "ghcr.io/dockserver/docker-haproxy:latest"
     hostname: "socket-proxy"
     container_name: "socket-proxy"
     restart: "${RESTARTAPP}"
@@ -52,6 +52,7 @@ services:
       timeout: "10s"
       retries: "3"
       start_period: "20s"
+
 networks:
   socket-proxy:
     driver: bridge
