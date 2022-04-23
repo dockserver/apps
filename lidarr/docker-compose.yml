@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   lidarr:
     hostname: "lidarr"
     container_name: "lidarr"

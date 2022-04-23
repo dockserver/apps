@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   lazylibrarian:
     hostname: "lazylibrarian"
     container_name: "lazylibrarian"

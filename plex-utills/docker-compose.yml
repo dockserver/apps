@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   plex-utills:
     hostname: "plex-utills"
     image: "jkirkcaldy/plex-utills"

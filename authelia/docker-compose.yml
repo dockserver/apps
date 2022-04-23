@@ -1,6 +1,3 @@
----
-version: '"3.9"'
-services:
   authelia:
     container_name: 'authelia'
     image: 'authelia/authelia:latest'

@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   snapdrop:
     hostname: "snapdrop"
     container_name: "snapdrop"

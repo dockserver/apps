@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   wgmanager:
     hostname: "wgmanager"
     container_name: "wgmanager"

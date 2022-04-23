@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   whoogle:
     hostname: "whoogle"
     container_name: "whoogle"

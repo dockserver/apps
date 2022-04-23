@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   nzbhydra:
     hostname: "nzbhydra"
     container_name: "nzbhydra"

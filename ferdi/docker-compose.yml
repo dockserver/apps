@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   ferdi:
     hostname: "ferdi"
     container_name: "ferdi"

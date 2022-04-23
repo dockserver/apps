@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   alltube:
     hostname: "alltube"
     container_name: "alltube"

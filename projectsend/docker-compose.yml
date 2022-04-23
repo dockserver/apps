@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   projectsend:
     hostname: "projectsend"
     container_name: "projectsend"

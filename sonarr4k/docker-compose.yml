@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   sonarr4k:
     hostname: "sonarr4k"
     container_name: "sonarr4k"

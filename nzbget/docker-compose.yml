@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   nzbget:
     hostname: "nzbget"
     container_name: "nzbget"

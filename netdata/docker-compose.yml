@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   netdata:
     container_name: "netdata"
     hostname: "netdata"

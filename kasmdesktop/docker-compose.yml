@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   kasmdesktop:
     hostname: "kasmdesktop"
     container_name: "kasmdesktop"

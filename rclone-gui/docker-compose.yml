@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   rclone-gui:
     hostname: "rclone-gui"
     container_name: "rclone-gui"

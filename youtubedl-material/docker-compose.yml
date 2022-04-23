@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   youtubedl-material:
     hostname: "youtubedl-material"
     container_name: "youtubedl-material"

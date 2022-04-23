@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   cloud9:
     hostname: "cloud9"
     container_name: "cloud9"

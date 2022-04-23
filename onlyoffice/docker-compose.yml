@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   onlyoffice:
     container_name: "onlyoffice"
     hostname: "onlyoffice"

@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   remmina:
     hostname: "remmina"
     container_name: "remmina"

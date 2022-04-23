@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   radarr:
     hostname: "radarr"
     container_name: "radarr"

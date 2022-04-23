@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   autoscan:
     hostname: "autoscan"
     container_name: "autoscan"

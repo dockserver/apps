@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   radarr4k:
     hostname: "radarr4k"
     container_name: "radarr4k"

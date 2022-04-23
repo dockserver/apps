@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   plex:
     hostname: "plex"
     container_name: "plex"

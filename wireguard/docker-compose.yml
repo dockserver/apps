@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   wireguard:
     hostname: "wireguard"
     container_name: "wireguard"

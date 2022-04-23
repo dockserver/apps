@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   unbound:
     image: ghcr.io/crazy-max/unbound
     hostname: unbound

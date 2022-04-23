@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   uptime-kuma:
     hostname: "uptime-kuma"
     container_name: "uptime-kuma"

@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   teamspeak:
     hostname: "teamspeak"
     container_name: "teamspeak"

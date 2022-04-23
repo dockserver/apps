@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   makemkv:
     hostname: "makemkv"
     container_name: "makemkv"

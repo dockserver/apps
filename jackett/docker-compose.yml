@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   jackett:
     hostname: "jackett"
     container_name: "jackett"

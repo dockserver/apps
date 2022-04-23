@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   gaps:
     hostname: "gaps"
     container_name: "gaps"

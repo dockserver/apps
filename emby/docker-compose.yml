@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   emby:
     hostname: "emby"
     container_name: "emby"

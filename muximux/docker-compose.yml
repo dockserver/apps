@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   maximux:
     hostname: "maximux"
     container_name: "maximux"

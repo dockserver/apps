@@ -1,6 +1,3 @@
----
-version: "3.9"
-services
   traefik-error-pages:
     container_name: 'traefik-error-pages'
     image: 'ghcr.io/tarampampam/error-pages:latest'

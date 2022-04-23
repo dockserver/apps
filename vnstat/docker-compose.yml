@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   vnstat:
     hostname: "vnstat"
     container_name: "vnstat"

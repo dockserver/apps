@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   iobroker:
     hostname: "iobroker"
     container_name: "iobroker"

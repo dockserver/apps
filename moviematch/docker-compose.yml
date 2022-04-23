@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   moviematch:
     hostname: "moviematch"
     container_name: "moviematch"

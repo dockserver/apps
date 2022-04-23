@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   qbittorrent:
     hostname: "qbittorrent"
     container_name: "qbittorrent"

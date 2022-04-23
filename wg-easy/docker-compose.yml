@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   wg-easy:
     hostname: "wg-easy"
     container_name: "wg-easy"

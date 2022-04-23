@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   wiki:
     container_name: "wiki"
     hostname: "wiki"

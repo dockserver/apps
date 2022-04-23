@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   prowlarr:
     hostname: "prowlarr"
     container_name: "prowlarr"

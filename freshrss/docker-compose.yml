@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   freshrss:
     hostname: "freshrss"
     container_name: "freshrss"

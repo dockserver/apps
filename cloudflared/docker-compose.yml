@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   cloudflared:
     image: "ghcr.io/dockserver/docker-cloudflared:latest"
     hostname: "cloudflared"

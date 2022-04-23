@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   dozzle:
     hostname: "dozzle"
     container_name: "dozzle"

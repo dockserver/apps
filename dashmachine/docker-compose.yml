@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   dashmachine:
     hostname: "dashmachine"
     container_name: "dashmachine"

@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   dockserver:
     hostname: "dockserver"
     container_name: "dockserver"

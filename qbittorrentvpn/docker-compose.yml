@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   qbittorrentvpn:
     cap_add:
       - "NET_ADMIN"

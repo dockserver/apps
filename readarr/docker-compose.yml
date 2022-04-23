@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   readarr:
     hostname: "readarr"
     container_name: "readarr"

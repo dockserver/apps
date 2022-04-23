@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   pihole:
     depends_on:
       - pi-cloudflared

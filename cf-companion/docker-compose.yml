@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   cf-companion:
     container_name: 'cf-companion'
     image: 'tiredofit/traefik-cloudflare-companion:latest'

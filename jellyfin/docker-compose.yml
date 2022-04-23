@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   jellyfin:
     hostname: "jellyfin"
     container_name: "jellyfin"

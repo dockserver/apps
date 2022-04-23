@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   fail2ban:
     image: "ghcr.io/crazy-max/fail2ban"
     hostname: "fail2ban"

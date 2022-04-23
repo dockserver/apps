@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   comixed:
     hostname: "comixed"
     container_name: "comixed"

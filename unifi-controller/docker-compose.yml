@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   unifi-controller:
     hostname: "unifi-controller"
     container_name: "unifi-controller"

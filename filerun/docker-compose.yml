@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   db_filerun:
     hostname: "db_filerun"
     container_name: "db_filerun"

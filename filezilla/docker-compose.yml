@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   filezilla:
     hostname: "filezilla"
     container_name: "filezilla"

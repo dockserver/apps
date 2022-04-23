@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   traktarr:
     hostname: "traktarr"
     container_name: "traktarr"

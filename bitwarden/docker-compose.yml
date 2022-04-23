@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   bitwarden:
     hostname: "bitwarden"
     container_name: "bitwarden"

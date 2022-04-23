@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   conreq:
     hostname: "conreq"
     container_name: "conreq"

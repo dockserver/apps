@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   vlc:
     container_name: "vlc"
     hostname: "vlc"

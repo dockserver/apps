@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   flaresolverr:
     hostname: "flaresolverr"
     container_name: "flaresolverr"

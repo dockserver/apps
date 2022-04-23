@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   firefox:
     container_name: "firefox"
     hostname: "firefox"

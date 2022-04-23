@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   nowshowing:
     hostname: "nowshowing"
     container_name: "nowshowing"

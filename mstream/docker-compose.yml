@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   mstream:
     hostname: "mstream"
     container_name: "mstream"

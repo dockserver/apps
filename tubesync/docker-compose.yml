@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   tubesync:
     hostname: "tubesync"
     container_name: "tubesync"

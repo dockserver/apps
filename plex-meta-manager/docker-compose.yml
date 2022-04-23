@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   plex-meta-manager:
     container_name: "plex-meta-manager"
     hostname: "plex-meta-manager"

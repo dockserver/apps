@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   tauticord:
     hostname: "tauticord"
     container_name: "tauticord"

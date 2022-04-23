@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   tautulli:
     hostname: "tautulli"
     container_name: "tautulli"

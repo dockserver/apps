@@ -1,6 +1,3 @@
----
-version: '3'
-services:
   plex-update-tool:
     hostname: 'plex-update-tool'
     container_name: 'plex-update-tool'

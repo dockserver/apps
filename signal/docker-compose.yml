@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   signal:
     container_name: "signal"
     hostname: "signal"

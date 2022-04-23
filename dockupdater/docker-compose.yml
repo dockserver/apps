@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   dockupdater:
     hostname: "dockupdater"
     container_name: "dockupdater"

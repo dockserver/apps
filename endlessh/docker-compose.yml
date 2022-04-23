@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   endlessh:
     image: "lscr.io/linuxserver/endlessh:latest"
     container_name: "endlessh"

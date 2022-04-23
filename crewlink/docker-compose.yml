@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   crewlink:
     hostname: "crewlink"
     container_name: "crewlink"

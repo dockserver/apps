@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   xteve:
     hostname: "xteve"
     container_name: "xteve"

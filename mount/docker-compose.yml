@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   mount:
     cap_add:
       - "SYS_ADMIN"

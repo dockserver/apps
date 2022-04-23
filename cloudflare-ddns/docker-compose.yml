@@ -1,6 +1,3 @@
----
-version: "3.9"
-services:
   cloudflare-ddns:
     image: oznu/cloudflare-ddns:latest
     hostname: cloudflare-ddns
