@@ -1,5 +1,5 @@
 ---
-version: ""3.9""
+version: "3.9"
 services:
   plex-meta-manager:
     container_name: "plex-meta-manager"

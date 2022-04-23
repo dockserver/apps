@@ -1,5 +1,5 @@
 ---
-version: ""3.9""
+version: "3.9"
 services:
   socket-proxy:
     image: "ghcr.io/dockserver/docker-haproxy:latest"
