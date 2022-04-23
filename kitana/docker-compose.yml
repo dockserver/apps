@@ -27,7 +27,7 @@ services:
       - "traefik.http.routers.kitana-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.kitana-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.kitana-rtr.service=kitana-svc"
-      - "traefik.http.services.kitana-svc.loadbalancer.server.port=31337"
+      - "traefik.http.services.kitana-svc.loadbalancer.server.port="3.9"37"
 networks:
   proxy:
     driver: bridge
