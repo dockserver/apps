@@ -15,7 +15,7 @@ services:
     ports:
       - "9987:9987/udp"
       - "10011:10011"
-      - "3003"3.9"0033"
+      - "30033:30033"
     networks:
       - ${DOCKERNETWORK}
     security_opt:
