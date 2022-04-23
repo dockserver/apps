@@ -1,0 +1,28 @@
+watchstate:
+    image: 'arabcoders/watchstate:latest'
+    container_name: 'watchstate'
+    hostname: 'watchstate'
+    domainname: '${DOMAIN}'
+    restart: "${RESTARTAPP}"
+    environment:
+      - 'WS_UID=${ID}'
+      - 'WS_GID=${ID}'
+      - 'WS_TZ=${TZ}'
+      - 'WS_LOGGER_FILE_ENABLE=1'
+      - 'WS_CRON_IMPORT=1'
+      - 'WS_CRON_EXPORT=1'
+      - 'WS_CRON_PUSH=1'
+      - WS_CRON_EXPORT_AT: '*/2 * * * *'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.services.watchstate-svc.loadbalancer.server.port=80"
+    volumes:
+      - '${APPFOLDER}/watchstate:/config'
+    networks:
+      - '${DOCKERNETWORK}'
+networks:
+  proxy:
+    driver: bridge
+    external: true
