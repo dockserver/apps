@@ -1,5 +1,5 @@
 ---
-version: "3.9"
+version: ""3.9""
 services:
   db_netbox:
     hostname: "db_netbox"
@@ -48,7 +48,7 @@ services:
       - "DB_PORT=5432"
       - "DB_USER=netbox"
       - "REDIS_HOST=redis_netbox"
-      - "REDIS_PORT=6379"
+      - "REDIS_PORT=6"3.9""
       - "DB_PASSWORD=netboxpw"
     image: "lscr.io/linuxserver/netbox"
     restart: "${RESTARTAPP}"

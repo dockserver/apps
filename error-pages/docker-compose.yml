@@ -1,5 +1,5 @@
 ---
-version: '"3.9"'
+version: '""3.9""'
 services
   traefik-error-pages:
     container_name: 'traefik-error-pages'
