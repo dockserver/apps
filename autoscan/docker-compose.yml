@@ -30,7 +30,7 @@ services:
       - "traefik.http.routers.autoscan-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.autoscan-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.autoscan-rtr.service=autoscan-svc"
-      - "traefik.http.services.autoscan-svc.loadbalancer.server.port="3.9"0"
+      - "traefik.http.services.autoscan-svc.loadbalancer.server.port="3030"
 networks:
   proxy:
     driver: bridge
