@@ -31,7 +31,6 @@ services:
       - "traefik.http.routers.<CONTAINERNAME>-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.<CONTAINERNAME>-rtr.service=<CONTAINERNAME>-svc"
       - "traefik.http.services.<CONTAINERNAME>-svc.loadbalancer.server.port=<PORTOFAPP>"
-
 networks:
   proxy:
     driver: bridge

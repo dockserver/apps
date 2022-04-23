@@ -49,7 +49,6 @@ services:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
     labels:
       - "dockupdater.enable=true"
-
 networks:
   proxy:
     driver: bridge

@@ -39,7 +39,6 @@ services:
       - "traefik.http.routers.aria-rtr.service=aria-svc"
       - "traefik.http.services.aria-svc.loadbalancer.server.port=6800"
       - "dockupdater.enable=true"
-
   ariang:
     image: "p3terx/ariang:latest"
     hostname: "ariang"

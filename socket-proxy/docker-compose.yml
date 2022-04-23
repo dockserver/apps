@@ -52,7 +52,6 @@ services:
       timeout: "10s"
       retries: "5"
       start_period: "20s"
-
 networks:
   socket-proxy:
     driver: bridge

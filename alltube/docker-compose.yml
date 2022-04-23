@@ -1,6 +1,5 @@
 ---
 version: "3.9"
-
 services:
   alltube:
     hostname: "alltube"
@@ -29,7 +28,6 @@ services:
       - "traefik.http.routers.alltube-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.alltube-rtr.service=alltube-svc"
       - "traefik.http.services.alltube-svc.loadbalancer.server.port=80"
-
 networks:
   proxy:
     driver: bridge

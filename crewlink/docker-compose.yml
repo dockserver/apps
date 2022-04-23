@@ -1,6 +1,5 @@
 ---
 version: "3.9"
-
 services:
   crewlink:
     hostname: "crewlink"
@@ -28,7 +27,6 @@ services:
       - "traefik.http.routers.crewlink-rtr.middlewares=chain-no-auth@file"
       - "traefik.http.routers.crewlink-rtr.service=crewlink-svc"
       - "traefik.http.services.crewlink-svc.loadbalancer.server.port=9736"
-
 networks:
   proxy:
     driver: bridge

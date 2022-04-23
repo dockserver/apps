@@ -1,6 +1,5 @@
 ---
 version: "3.9"
-
 services:
   cloudbeaver:
     hostname: "cloudbeaver"
@@ -29,7 +28,6 @@ services:
       - "traefik.http.routers.cloudbeaver-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.cloudbeaver-rtr.service=cloudbeaver-svc"
       - "traefik.http.services.cloudbeaver-svc.loadbalancer.server.port=8978"
-
 networks:
   proxy:
     driver: bridge

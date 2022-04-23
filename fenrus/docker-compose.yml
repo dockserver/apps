@@ -29,7 +29,6 @@ services:
       - "traefik.http.routers.fenrus-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.fenrus-rtr.service=fenrus-svc"
       - "traefik.http.services.fenrus-svc.loadbalancer.server.port=3000"
-
 networks:
   proxy:
     driver: bridge
