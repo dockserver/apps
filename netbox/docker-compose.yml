@@ -48,7 +48,7 @@ services:
       - "DB_PORT=5432"
       - "DB_USER=netbox"
       - "REDIS_HOST=redis_netbox"
-      - "REDIS_PORT=6"3.9""
+      - "REDIS_PORT=6379"
       - "DB_PASSWORD=netboxpw"
     image: "lscr.io/linuxserver/netbox"
     restart: "${RESTARTAPP}"
