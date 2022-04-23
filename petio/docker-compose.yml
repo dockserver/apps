@@ -1,5 +1,5 @@
 ---
-version: "3"
+version: "3.9"
 services:
   petio:
     hostname: "petio"
@@ -31,9 +31,10 @@ services:
       - "traefik.http.routers.petio-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.petio-rtr.service=petio-svc"
       - "traefik.http.services.petio-svc.loadbalancer.server.port=7777"
+
   mongo:
     hostname: "petiomongo"
-    image: "mongo:latest"
+    image: "mongo:${MONGODB_DOCKER_TAG:-4.4.0}"
     container_name: "petiomongo"
     networks:
       - ${DOCKERNETWORK}
