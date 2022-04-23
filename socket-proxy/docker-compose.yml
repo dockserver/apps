@@ -1,5 +1,5 @@
 ---
-version: "3"
+version: "3.9"
 services:
   socket-proxy:
     image: "ghcr.io/dockserver/docker-haproxy:latest"
@@ -50,7 +50,7 @@ services:
       test: "wget --spider http://localhost:2375/version || exit 1"
       interval: "60s"
       timeout: "10s"
-      retries: "3"
+      retries: "3.9"
       start_period: "20s"
 
 networks:

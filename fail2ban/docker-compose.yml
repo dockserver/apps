@@ -1,5 +1,5 @@
 ---
-version: "3"
+version: "3.9"
 services:
   fail2ban:
     image: "ghcr.io/crazy-max/fail2ban"
