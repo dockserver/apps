@@ -26,11 +26,11 @@
       - "traefik.docker.network=proxy"
       - "dockupdater.enable=true"
       - "traefik.http.routers.mount-rtr.entrypoints=https"
-      - "traefik.http.routers.mount-rtr.rule=Host(`moount.${DOMAIN}`)"
+      - "traefik.http.routers.mount-rtr.rule=Host(`mount.${DOMAIN}`)"
       - "traefik.http.routers.mount-rtr.tls=true"
       - "traefik.http.routers.mount-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.mount-rtr.middlewares=chain-authelia@file"
-      - "traefik.http.routers.mount-rtr.service=radarr-svc"
+      - "traefik.http.routers.mount-rtr.service=mount-svc"
       - "traefik.http.services.mount-svc.loadbalancer.server.port=5572"
 networks:
   proxy:
