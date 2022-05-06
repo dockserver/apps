@@ -22,9 +22,9 @@
       - "${APPFOLDER}/system:/system:rshared"
       - "/mnt:/mnt:shared"
     labels:
-      - "dockupdater.disable=true"
+      - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      - "dockupdater.enable=true"
+      - "dockupdater.enable=false"
       - "traefik.http.routers.mount-rtr.entrypoints=https"
       - "traefik.http.routers.mount-rtr.rule=Host(`mount.${DOMAIN}`)"
       - "traefik.http.routers.mount-rtr.tls=true"
