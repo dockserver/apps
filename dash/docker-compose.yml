@@ -1,3 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   dashmachine:
     hostname: "dash"
     container_name: "dash"
@@ -12,6 +16,10 @@
       - ${DOCKERNETWORK}
     security_opt:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${APPFOLDER}:${APPFOLDER}"
+      - "unionfs:/mnt
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -23,7 +31,13 @@
       - "traefik.http.routers.dash-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.dash-rtr.service=dash-svc"
       - "traefik.http.services.dash-svc.loadbalancer.server.port=3001"
+
 networks:
   proxy:
     driver: bridge
     external: true
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt
