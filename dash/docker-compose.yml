@@ -19,7 +19,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "${APPFOLDER}:${APPFOLDER}"
-      - "unionfs:/mnt
+      - "unionfs:/mnt"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
