@@ -6,13 +6,6 @@
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-      - "DASHDOT_OS_WIDGET_ENABLE=true"
-      - "DASHDOT_CPU_WIDGET_ENABLE=true"
-      - "DASHDOT_CPU_DATAPOINTS=20"
-      - "DASHDOT_CPU_POLL_INTERVAL=1000"
-      - "DASHDOT_RAM_WIDGET_ENABLE=true"
-      - "DASHDOT_RAM_POLL_INTERVAL=1000"
-      - "DASHDOT_STORAGE_WIDGET_ENABLE=true"
     image: "ghcr.io/dockserver/docker-dash:latest"
     restart: "${RESTARTAPP}"
     networks:
