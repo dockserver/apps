@@ -28,7 +28,7 @@
       - "traefik.http.routers.dash-rtr.tls=true"
       - "traefik.http.routers.dash-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.dash-rtr.middlewares=chain-authelia@file"
-      - "traefik.http.routers.dash-rtr.service=dashmachine-svc"
+      - "traefik.http.routers.dash-rtr.service=dash-svc"
       - "traefik.http.services.dash-svc.loadbalancer.server.port=3001"
 networks:
   proxy:
