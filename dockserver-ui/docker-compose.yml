@@ -1,0 +1,42 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services
+  webui:
+    hostname: "webui"
+    container_name: "webui"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+    image: "${RADARRIMAGE}"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "${APPFOLDER}:${APPFOLDER}:rw"
+      - "unionfs:/mnt"
+      - "${SOCKET:-/var/run/docker.sock}:${SOCKET:-/var/run/docker.sock}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.webui-rtr.entrypoints=https"
+      - "traefik.http.routers.webui-rtr.rule=Host(`webui.${DOMAIN}`)"
+      - "traefik.http.routers.webui-rtr.tls=true"
+      - "traefik.http.routers.webui-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.webui-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.webui-rtr.service=webui-svc"
+      - "traefik.http.services.webui-svc.loadbalancer.server.port=5000"
+networks:
+  proxy:
+    driver: bridge
+    external: true
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt
