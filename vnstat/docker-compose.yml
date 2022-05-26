@@ -1,3 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   vnstat:
     hostname: "vnstat"
     container_name: "vnstat"
@@ -5,12 +9,18 @@
       - "PGID=${ID}"
       - "PUID=${ID}"
       - "TZ=${TZ}"
-    image: "ghcr.io/dockserver/docker-vnstat:latest"
+      - "HTTP_PORT=8685"
+      - "HTTP_BIND=*"
+      - "HTTP_LOG=/dev/stdout"
+      - "LARGE_FONTS=0"
+      - "CACHE_TIME=1"
+      - "RATE_UNIT=1"
+      - "PAGE_REFRESH=0"
+    image: "vergoh/vnstat:latest"
     networks:
       - ${DOCKERNETWORK}
     restart: "${RESTARTAPP}"
     volumes:
-      - "/usr/bin/vnstat:/usr/bin/vnstat"
       - "/var/lib/vnstat:/var/lib/vnstat"
       - "/etc/localtime:/etc/localtime:ro"
     labels:
