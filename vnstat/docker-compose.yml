@@ -16,7 +16,7 @@ services:
       - "CACHE_TIME=1"
       - "RATE_UNIT=1"
       - "PAGE_REFRESH=0"
-    image: "vergoh/vnstat:latest"
+    image: "ghcr.io/dockserver/docker-vnstat:latest"
     networks:
       - ${DOCKERNETWORK}
     restart: "${RESTARTAPP}"
@@ -33,7 +33,7 @@ services:
       - "traefik.http.routers.vnstat-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.vnstat-rtr.middlewares=chain-authelia@file"
       - "traefik.http.routers.vnstat-rtr.service=vnstat-svc"
-      - "traefik.http.services.vnstat-svc.loadbalancer.server.port=80"
+      - "traefik.http.services.vnstat-svc.loadbalancer.server.port=8685"
 networks:
   proxy:
     driver: bridge
