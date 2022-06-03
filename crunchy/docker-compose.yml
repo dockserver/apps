@@ -1,0 +1,39 @@
+---
+version: '3'
+services:
+  crunchy:
+    hostname: 'crunchy'
+    container_name: 'crunchy'
+    environment:
+      - 'PGID=${ID}'
+      - 'PUID=${ID}'
+      - 'TZ=${TZ}'
+      - 'UMASK=022'
+      - 'EMAIL=${CRUNCHY_EMAIL}'        ### crunchyroll email ###
+      - 'PASSWORD=${CRUNCHY_PASSWORD}'  ### crunchyroll password  ###
+      - 'LANGUAGESET=${LANGUAGESET}'    ### is used to pull the language: ar-SA, de-DE, en-US, es-419, es-ES, fr-FR, it-IT, ja-JP, pt-BR, pt-PT, ru-RU
+      - 'LANGUAGETAG=${LANGUAGETAG}'    ### GERMAN , ENGLISH , FRENCH  is used for the filename 
+    image: 'ghcr.io/dockserver/docker-crunchy:latest'
+    restart: 'unless-stopped'
+    networks:
+      - proxy
+    security_opt:
+      - 'no-new-privileges:true'
+    volumes:
+      - '/opt/appdata/crunchy:/config:rw'
+      - 'unionfs:/mnt:rw'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'dockupdater.enable=true'
+
+networks:
+  proxy:
+    driver: bridge
+    external: true
+
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt
