@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   traefik:
     container_name: 'traefik'
     image: 'traefik:latest'
@@ -27,8 +23,8 @@ services:
       - --providers.file.directory=/rules
       - --providers.file.watch=true
       - --providers.docker=true
-      - --providers.docker.endpoint=tcp://docker-socket-proxy:2375
-      - --providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service" }}.$DOMAIN`)
+      - --providers.docker.endpoint=${DOCKERSOCKET}
+      - --providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service" }}.${DOMAIN}`)
       - --providers.docker.exposedByDefault=false
       - --providers.docker.network=proxy
       - --providers.docker.swarmMode=false
