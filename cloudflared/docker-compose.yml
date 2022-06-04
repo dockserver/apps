@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   cloudflared:
     image: "ghcr.io/dockserver/docker-cloudflared:latest"
     hostname: "cloudflared"
@@ -24,4 +20,4 @@ networks:
   proxy:
     driver: bridge
     external: true
-#"
+
