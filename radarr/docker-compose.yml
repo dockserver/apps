@@ -1,3 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   radarr:
     hostname: "radarr"
     container_name: "radarr"
@@ -7,7 +11,7 @@
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
       - "DOCKER_MODS=ghcr.io/gilbn/theme.park:radarr"
-      - "TP_THEME=${RADARRTHEME}" 
+      - "TP_THEME=${RADARRTHEME}"
     image: "${RADARRIMAGE}"
     restart: "${RESTARTAPP}"
     networks:

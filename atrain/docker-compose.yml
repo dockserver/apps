@@ -1,5 +1,9 @@
 ---
 version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+---
+version: "3.9"
 services:  
   a-train:
     hostname: "a-train"

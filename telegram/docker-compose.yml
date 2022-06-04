@@ -1,3 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   telegram:
     container_name: "telegram"
     hostname: "telegram"

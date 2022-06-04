@@ -1,3 +1,11 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   calibre-web:
     hostname: "calibre-web"
     container_name: "calibre-web"

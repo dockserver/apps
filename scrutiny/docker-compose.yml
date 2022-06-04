@@ -1,3 +1,11 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   scrutiny:
     hostname: 'scrutiny'
     container_name: 'scrutiny'

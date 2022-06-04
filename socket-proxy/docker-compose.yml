@@ -1,3 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   socket-proxy:
     image: "ghcr.io/dockserver/docker-haproxy:latest"
     hostname: "socket-proxy"

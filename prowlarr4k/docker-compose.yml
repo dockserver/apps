@@ -1,3 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   prowlarr4k:
     hostname: "prowlarr4k"
     container_name: "prowlarr4k"

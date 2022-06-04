@@ -1,3 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   bazarr4k:
     hostname: "bazarr4k"
     container_name: "bazarr4k"

@@ -1,3 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   cf-companion:
     container_name: 'cf-companion'
     image: 'tiredofit/traefik-cloudflare-companion:latest'

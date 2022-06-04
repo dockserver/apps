@@ -2,6 +2,10 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
   vnstat:
     hostname: "vnstat"
     container_name: "vnstat"
