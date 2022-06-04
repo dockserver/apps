@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   db_filerun:
     hostname: "db_filerun"
     container_name: "db_filerun"
