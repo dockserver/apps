@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   db_koel:
     hostname: "db_koel"
     container_name: "db_koel"
@@ -70,4 +66,3 @@ volumes:
     driver: local-persist
     driver_opts:
       mountpoint: /mnt
-#"
