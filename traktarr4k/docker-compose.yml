@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   traktarr4k:
     hostname: "traktarr4k"
     container_name: "traktarr4k"
