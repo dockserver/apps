@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   unmanic:
     hostname: "unmanic"
     container_name: "unmanic"
