@@ -2,13 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
----
-version: '3'
-services:
   crunchy:
     hostname: 'crunchy'
     container_name: 'crunchy'
@@ -34,12 +27,10 @@ services:
       - 'traefik.enable=true'
       - 'traefik.docker.network=proxy'
       - 'dockupdater.enable=true'
-
 networks:
   proxy:
     driver: bridge
     external: true
-
 volumes:
   unionfs:
     driver: local-persist
