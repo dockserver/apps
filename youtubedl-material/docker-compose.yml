@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   youtubedl-material:
     hostname: "youtubedl-material"
     container_name: "youtubedl-material"
