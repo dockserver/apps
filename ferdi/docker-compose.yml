@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   ferdi:
     hostname: "ferdi"
     container_name: "ferdi"
@@ -45,4 +41,3 @@ networks:
   proxy:
     driver: bridge
     external: true
-#"
