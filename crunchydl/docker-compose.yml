@@ -1,0 +1,33 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+  crunchy:
+    hostname: 'crunchy'
+    container_name: 'crunchy'
+    environment:
+      - 'PGID=${ID}'
+      - 'PUID=${ID}'
+      - 'TZ=${TZ}'
+      - 'UMASK=022'
+      - 'EMAIL=${CRUNCHY_EMAIL}'        ### crunchyroll email ###
+      - 'PASSWORD=${CRUNCHY_PASSWORD}'  ### crunchyroll password  ###
+      - 'SERVICE=${SERVICE}'            ### crunchy 
+      - 'DUBLANG=${DUBLANG}'            ### [eng, spa, por, fra, deu, ara, ita, rus, tur, cmn, kor, jpn]
+    image: 'ghcr.io/dockserver/docker-crunchydl:latest'
+    restart: 'unless-stopped'
+    networks:
+      - proxy
+    security_opt:
+      - 'no-new-privileges:true'
+    volumes:
+      - '${APPFOLDER}/crunchy:/config:rw'
+      - '/mnt/downloads/crunchy:/videos:rw'
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'dockupdater.enable=true'
+networks:
+  proxy:
+    driver: bridge
+    external: true
