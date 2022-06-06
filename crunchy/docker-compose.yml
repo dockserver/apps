@@ -21,7 +21,7 @@ services:
     security_opt:
       - 'no-new-privileges:true'
     volumes:
-      - '/opt/appdata/crunchy:/config:rw'
+      - '${APPFOLDER}/crunchy:/config:rw'
       - 'unionfs:/mnt:rw'
     labels:
       - 'traefik.enable=true'
