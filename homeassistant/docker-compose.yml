@@ -17,7 +17,8 @@ services:
     security_opt:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
     volumes:
-      - "${APPFOLDER}/homeassistant:/config:rw"    labels:
+      - "${APPFOLDER}/homeassistant:/config:rw"    
+    labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "dockupdater.enable=true"
