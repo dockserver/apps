@@ -11,14 +11,34 @@ function progressfail() {
     $(which echo) -e "\e[0;91m[FAILED TO UPDATE]\e[0m \e[1m$1\e[0m"
 }
 
+function updatecompose() {
+  export DOCKER_CONFIG=${DOCKER_CONFIG:-/opt/appdata/.docker}
+  VERSION="$($(which curl) -sX GET https://api.github.com/repos/docker/compose/releases/latest | jq --raw-output '.tag_name')"
+  ARCH=$(uname -m)
+  progress "**** installing now docker composer $VERSION on $ARCH ****" && \
+  $(which mkdir) -p $DOCKER_CONFIG/cli-plugins && \
+  $(which curl) -fsSL "https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-linux-${ARCH}" -o $DOCKER_CONFIG/cli-plugins/docker-compose
+  if test -f $DOCKER_CONFIG/cli-plugins/docker-compose;then
+     $(which chmod) +x $DOCKER_CONFIG/cli-plugins/docker-compose && \
+       $(which ln) -sf $DOCKER_CONFIG/cli-plugins/docker-compose /usr/bin/docker-compose
+  else
+     sleep 5 ## wait time before next pull
+       $(which mkdir) -p $DOCKER_CONFIG/cli-plugins && \
+         $(which curl) -fsSL https://github.com/docker/compose/releases/download/$VERSION/docker-compose-linux-`$(uname -m)` -o $DOCKER_CONFIG/cli-plugins/docker-compose && \
+           $(which chmod) +x $DOCKER_CONFIG/cli-plugins/docker-compose && \
+             $(which ln) -sf $DOCKER_CONFIG/cli-plugins/docker-compose /usr/bin/docker-compose
+  fi
+
+}
+
 function updatecontainer() {
 set -e
 for app in /opt/apps/**/docker-compose.yml; do
-  if [[ $($(which docker-compose) -f "$app" ps -q) ]]; then
+  if [[ $(docker compose -f "$app" ps -q) ]]; then
      progress "--> Updating $app <--" && \
-       $(which docker-compose) -f "$app" --env-file=/opt/appdata/compose/.env down && \
-         $(which docker-compose) -f "$app" --env-file=/opt/appdata/compose/.env pull && \
-           $(which docker-compose) -f "$app" --env-file=/opt/appdata/compose/.env up -d --force-recreate 
+       docker compose -f "$app" --env-file=/opt/appdata/compose/.env down && \
+         docker compose -f "$app" --env-file=/opt/appdata/compose/.env pull && \
+           docker compose -f "$app" --env-file=/opt/appdata/compose/.env up -d --force-recreate 
   else
      progressfail "--> Skipping $app as it's not running <--"
   fi
@@ -30,8 +50,8 @@ function install() {
 APP=$INSTAPP
 if [[ -d "/opt/apps/$APP" ]];then
    progress "--> install $APP <--" && \
-     $(which docker-compose) -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env pull && \
-       $(which docker-compose) -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env up -d --force-recreate 
+     docker compose -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env pull && \
+       docker compose -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env up -d --force-recreate 
 else
    progressfail "--> NO $APP FOUND || SKIPPING <--"
 fi
@@ -44,4 +64,5 @@ case "$COMMAND" in
    "" ) exit ;;
    "install" ) install ;;
    "updatecontainer" ) updatecontainer ;;
+   "updatecompose" ) updatecompose ;;
 esac
