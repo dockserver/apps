@@ -17,9 +17,11 @@ services:
     security_opt:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
     volumes:
+      - "/etc/os-release:/etc/os-release:ro"
       - "/etc/localtime:/etc/localtime:ro"
+      - "/proc/1/ns/net:/mnt/host_ns_net:ro"
       - "${APPFOLDER}:${APPFOLDER}"
-      - "unionfs:/mnt"
+      - "unionfs:/mnt/host_mnt:ro"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
