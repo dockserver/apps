@@ -30,8 +30,8 @@ function install() {
 APP=$2
 if [[ -d "/opt/apps/$APP" ]];then
    progress "--> install $APP <--" && \
-     $(which docker-compose) -f "$APP" --env-file=/opt/appdata/compose/.env pull && \
-       $(which docker-compose) -f "$APP" --env-file=/opt/appdata/compose/.env up -d --force-recreate 
+     $(which docker-compose) -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env pull && \
+       $(which docker-compose) -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env up -d --force-recreate 
 else
    progressfail "--> NO $APP FOUND || SKIPPING <--"
 fi
