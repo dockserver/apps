@@ -36,9 +36,9 @@ set -e
 for app in /opt/apps/**/docker-compose.yml; do
   if [[ $(docker compose -f "$app" ps -q) ]]; then
      progress "--> Updating $app <--" && \
-       docker compose -f "$app" --env-file=/opt/appdata/compose/.env down && \
-         docker compose -f "$app" --env-file=/opt/appdata/compose/.env pull && \
-           docker compose -f "$app" --env-file=/opt/appdata/compose/.env up -d --force-recreate 
+       docker compose -f "$app" --env-file=/opt/appdata/compose/.env --ansi=never down && \
+         docker compose -f "$app" --env-file=/opt/appdata/compose/.env --ansi=never pull && \
+           docker compose -f "$app" --env-file=/opt/appdata/compose/.env --ansi=never up -d --force-recreate 
   else
      progressfail "--> Skipping $app as it's not running <--"
   fi
@@ -50,8 +50,8 @@ function install() {
 APP=$INSTAPP
 if [[ -d "/opt/apps/$APP" ]];then
    progress "--> install $APP <--" && \
-     docker compose -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env pull && \
-       docker compose -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env up -d --force-recreate 
+     docker compose -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env --ansi=never pull && \
+       docker compose -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env --ansi=never up -d --force-recreate 
 else
    progressfail "--> NO $APP FOUND || SKIPPING <--"
 fi
