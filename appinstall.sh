@@ -27,7 +27,7 @@ exit
 }
 
 function install() {
-APP=$2
+APP=$INSTAPP
 if [[ -d "/opt/apps/$APP" ]];then
    progress "--> install $APP <--" && \
      $(which docker-compose) -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env pull && \
@@ -39,7 +39,7 @@ exit
 }
 
 COMMAND=$1
-APP=$2
+INSTAPP=$2
 case "$COMMAND" in
    "" ) exit ;;
    "install" ) install ;;
