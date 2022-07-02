@@ -13,7 +13,7 @@ function progressfail() {
 
 function updatecontainer() {
 set -e
-for app in /opt/appdata/apps/**/docker-compose.yml; do
+for app in /opt/apps/**/docker-compose.yml; do
   if [[ $($(which docker-compose) -f "$app" ps -q) ]]; then
      progress "--> Updating $app <--" && \
        $(which docker-compose) -f "$app" --env-file /opt/appdata/compose/.env down && \
@@ -28,7 +28,7 @@ exit
 
 function install() {
 APP=$2
-if [[ -d "/opt/appdata/apps/$APP" ]];then
+if [[ -d "/opt/apps/$APP" ]];then
    progress "--> install $APP <--" && \
      $(which docker-compose) -f "$APP" --env-file /opt/appdata/compose/.env pull && \
        $(which docker-compose) -f "$APP" --env-file /opt/appdata/compose/.env up -d --force-recreate 
