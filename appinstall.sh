@@ -39,7 +39,7 @@ exit
 }
 
 COMMAND=$1
-APP$=2
+APP=$2
 case "$COMMAND" in
    "" ) exit ;;
    "install" ) install ;;
