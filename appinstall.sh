@@ -4,11 +4,11 @@
 
 function progress() {
   $(which echo) && \
-    $(which echo) -e "\e[1;31m[RUN UPDATE]\e[0m \e[1m$1\e[0m"
+    $(which echo) -e "\e[1;31m[RUN : ]\e[0m \e[1m$1\e[0m"
 }
 function progressfail() {
   $(which echo) && \
-    $(which echo) -e "\e[0;91m[FAILED TO UPDATE]\e[0m \e[1m$1\e[0m"
+    $(which echo) -e "\e[0;91m[FAILED : ]\e[0m \e[1m$1\e[0m"
 }
 
 function updatecompose() {
@@ -20,18 +20,23 @@ function updatecompose() {
   $(which curl) -fsSL "https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-linux-${ARCH}" -o $DOCKER_CONFIG/cli-plugins/docker-compose
   if test -f $DOCKER_CONFIG/cli-plugins/docker-compose;then
      $(which chmod) +x $DOCKER_CONFIG/cli-plugins/docker-compose && \
-       $(which ln) -sf $DOCKER_CONFIG/cli-plugins/docker-compose /usr/bin/docker-compose
+       $(which rm) -f /usr/bin/docker-compose /usr/local/bin/docker-compose && \
+         $(which cp) -r $DOCKER_CONFIG/cli-plugins/docker-compose /usr/bin/docker-compose && \
+           $(which cp) -r $DOCKER_CONFIG/cli-plugins/docker-compose /usr/local/bin/docker-compose
   else
      sleep 5 ## wait time before next pull
        $(which mkdir) -p $DOCKER_CONFIG/cli-plugins && \
          $(which curl) -fsSL https://github.com/docker/compose/releases/download/$VERSION/docker-compose-linux-`$(uname -m)` -o $DOCKER_CONFIG/cli-plugins/docker-compose && \
-           $(which chmod) +x $DOCKER_CONFIG/cli-plugins/docker-compose && \
-             $(which ln) -sf $DOCKER_CONFIG/cli-plugins/docker-compose /usr/bin/docker-compose
+           $(which rm) -f /usr/bin/docker-compose /usr/local/bin/docker-compose && \
+             $(which chmod) +x $DOCKER_CONFIG/cli-plugins/docker-compose && \
+               $(which cp) -r $DOCKER_CONFIG/cli-plugins/docker-compose /usr/bin/docker-compose && \
+                 $(which cp) -r $DOCKER_CONFIG/cli-plugins/docker-compose /usr/local/bin/docker-compose
   fi
 
 }
 
 function updatecontainer() {
+if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
 set -e
 for app in /opt/apps/**/docker-compose.yml; do
   if [[ $(docker compose -f "$app" ps -q) ]]; then
@@ -48,6 +53,7 @@ exit
 
 function install() {
 APP=$INSTAPP
+if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
 if [[ -d "/opt/apps/$APP" ]];then
    progress "--> install $APP <--" && \
      docker compose -f /opt/apps/"$APP"/docker-compose.yml --env-file=/opt/appdata/compose/.env --ansi=never pull && \
