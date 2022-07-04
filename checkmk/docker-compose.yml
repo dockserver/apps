@@ -1,0 +1,39 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+  dashmachine:
+    hostname: "checkmk"
+    container_name: "checkmk"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+    image: "checkmk/check-mk-raw"
+    ulimits:
+      nofile: 1024
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "/etc/os-release:/etc/os-release:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "${APPFOLDER}/monitoring:/omd/sites"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.checkmk-rtr.entrypoints=https"
+      - "traefik.http.routers.checkmk-rtr.rule=Host(`checkmk.${DOMAIN}`)"
+      - "traefik.http.routers.checkmk-rtr.tls=true"
+      - "traefik.http.routers.checkmk-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.checkmk-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.checkmk-rtr.service=dash-svc"
+      - "traefik.http.services.checkmk-svc.loadbalancer.server.port=5000"
+networks:
+  proxy:
+    driver: bridge
+    external: true
