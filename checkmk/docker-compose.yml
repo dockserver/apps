@@ -31,7 +31,7 @@ services:
       - "traefik.http.routers.checkmk-rtr.tls=true"
       - "traefik.http.routers.checkmk-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.checkmk-rtr.middlewares=chain-authelia@file"
-      - "traefik.http.routers.checkmk-rtr.service=dash-svc"
+      - "traefik.http.routers.checkmk-rtr.service=checkmk-svc"
       - "traefik.http.services.checkmk-svc.loadbalancer.server.port=5000"
 networks:
   proxy:
