@@ -83,8 +83,9 @@ if [[ -d "/tmp/pulls" ]]; then
    curlapp
    if [[ -f "/tmp/pulls/docker-compose.yml" ]]; then
       progress "--> install $APP <--" && \
-        docker compose -f /tmp/pulls/docker-compose.yml --env-file=/opt/appdata/compose/.env --ansi=auto pull && \
-          docker compose -f /tmp/pulls/docker-compose.yml --env-file=/opt/appdata/compose/.env --ansi=auto up -d --force-recreate 
+        docker compose -f /tmp/pulls/docker-compose.yml --env-file=/opt/appdata/compose/.env --ansi=auto down && \
+          docker compose -f /tmp/pulls/docker-compose.yml --env-file=/opt/appdata/compose/.env --ansi=auto pull && \
+            docker compose -f /tmp/pulls/docker-compose.yml --env-file=/opt/appdata/compose/.env --ansi=auto up -d --force-recreate 
    else
       progressfail "--> NO DOCKER-COMPOSE FOUND || EXIT <--"
    fi
