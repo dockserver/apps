@@ -69,8 +69,8 @@ if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
         docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto down && mountdrop
      fi
      docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-     docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --quiet-pull --ansi=auto pull && \
-     docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --quiet-pull --ansi=auto up -d --force-recreate
+     docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+     docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
      $(which rm) -rf /tmp/pulls/"$APP"
    done
 exit
@@ -86,8 +86,8 @@ if [[ -d "/tmp/pulls" ]]; then
    if [[ -f "/tmp/pulls/"$APP"/docker-compose.yml" ]]; then
       progress "--> install $APP <--" && \
       docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-      docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --quiet-pull --ansi=auto pull && \
-      docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --quiet-pull --ansi=auto up -d --force-recreate && \
+      docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+      docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
       $(which rm) -rf /tmp/pulls/"$APP"
    else
       progressfail "--> NO DOCKER-COMPOSE FOUND || EXIT <--"
