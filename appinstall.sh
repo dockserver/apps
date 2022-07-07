@@ -13,7 +13,7 @@ function progressfail() {
 
 function curlapp() {
 APP=$INSTAPP
-STATUSCODE=$($(which curl) --silent --output /dev/stderr --write-out "%{http_code}" https://raw.githubusercontent.com/dockserver/apps/master/"$APP"/docker-compose.yml)
+STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" https://raw.githubusercontent.com/dockserver/apps/master/"$APP"/docker-compose.yml)
   if test $STATUSCODE -ne 200; then
      progressfail "we could not found the $APP"
   else
