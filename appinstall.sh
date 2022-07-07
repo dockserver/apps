@@ -12,7 +12,7 @@ function progressfail() {
 }
 
 function curlapp() {
-APP=$INSTAPP
+APP=APP
 STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" https://raw.githubusercontent.com/dockserver/apps/master/"$APP"/docker-compose.yml)
   if test $STATUSCODE -ne 200; then
      progressfail "we could not found the $APP"
@@ -77,21 +77,24 @@ exit
 }
 
 function install() {
-APP=$INSTAPP
+APP=${INSTAPP}
 export ENV="/opt/appdata/compose/.env"
 if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
 if [[ ! -d "/tmp/pulls" ]];then $(which mkdir) -p /tmp/pulls;fi
 if [[ -d "/tmp/pulls" ]]; then
-   curlapp
-   if [[ -f "/tmp/pulls/"$APP"/docker-compose.yml" ]]; then
-      progress "--> install $APP <--" && \
-      docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-      docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-      docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
-      $(which rm) -rf /tmp/pulls/"$APP"
-   else
-      progressfail "--> NO DOCKER-COMPOSE FOUND || EXIT <--"
-   fi
+   for i in ${APP[@]} ; do
+      APP=i
+      curlapp
+      if [[ -f "/tmp/pulls/"$i"/docker-compose.yml" ]]; then
+         progress "--> install $i <--" && \
+         docker compose -f /tmp/pulls/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+         docker compose -f /tmp/pulls/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+         docker compose -f /tmp/pulls/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+         $(which rm) -rf /tmp/pulls/"$i"
+      else
+         progressfail "--> NO DOCKER-COMPOSE FOUND || EXIT <--"
+      fi
+   done
 else
    progressfail "--> NO $APP FOUND || SKIPPING <--"
 fi
@@ -99,7 +102,7 @@ exit
 }
 
 COMMAND=$1
-INSTAPP=$2
+INSTAPP=${@:2}
 case "$COMMAND" in
    "" ) exit ;;
    "install" ) install ;;
