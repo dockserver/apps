@@ -78,7 +78,7 @@ exit
 function install() {
 APP=$INSTAPP
 if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-if [[ ! -d "/tmp/pulls" ]]; $(which mkdir) -p /tmp/pulls;fi
+if [[ ! -d "/tmp/pulls" ]];then $(which mkdir) -p /tmp/pulls;fi
 if [[ -d "/tmp/pulls" ]]; then
    curlapp
    if [[ -f "/tmp/pulls/docker-compose.yml" ]]; then
