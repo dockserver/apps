@@ -12,7 +12,7 @@ function progressfail() {
 }
 
 function curlapp() {
-APP=APP
+APP=$APP
 STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" https://raw.githubusercontent.com/dockserver/apps/master/"$APP"/docker-compose.yml)
   if test $STATUSCODE -ne 200; then
      progressfail "we could not found the $APP"
@@ -83,7 +83,7 @@ if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
 if [[ ! -d "/tmp/pulls" ]];then $(which mkdir) -p /tmp/pulls;fi
 if [[ -d "/tmp/pulls" ]]; then
    for i in ${APP[@]} ; do
-      APP=i
+      APP=$i
       curlapp
       if [[ -f "/tmp/pulls/"$i"/docker-compose.yml" ]]; then
          progress "--> install $i <--" && \
