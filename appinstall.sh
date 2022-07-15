@@ -179,7 +179,7 @@ if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
 if [[ -d "${pulls}" ]]; then
    for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
       curlapp
-      if [[ -f "${pulls}"/"$app"/docker-compose.yml" ]]; then
+      if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
          progress "--> install $app <--" && \
          docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
          docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
