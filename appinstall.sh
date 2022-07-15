@@ -1,25 +1,122 @@
 #!/usr/bin/env bash
+####################################
+# All rights reserved.              #
+# started from Zero                 #
+# Docker owned dockserver           #
+# Docker Maintainer dockserver      #
+#####################################
+#####################################
+# NO CUSTOMIZING IS ALLOWED         #
+# NO REBRANDING IS ALLOWED          #
+# NO CODE MIRRORING IS ALLOWED      #
+#####################################
+# shellcheck disable=SC2086
+# shellcheck disable=SC2046
+
+function changes() {
+
+$(which cat) <<- EOF
+## CHANGELOG ##
+## PREVIEW OF VERSION 0.3 || DATE UNKNOWN YET GMT
+## NEXT RELEASE WILL COVER : 
+##     ADD RESTORE OPTION
+##     ADD UPLOAD FUNCTIONS TO CLOUD [[ NOT USING THE UPLOADER ]]
+##     RESTORE FROM CLOUD AND INSTALL APPS
+##     AFTER RESTORE INSTALL APP WITH COMPOSER
+##     CHECK IS ENVIRONMENT FILE AVAILABLE 
+##     UPLOAD SYSTEM FOLDER TO CLOUD
+##     USE ENCRYPTED OR UNENCRYPTED OPTIONS FOR TAR FILES
+##     USE PLEX/EMBY/JELLYFIN  HW SUPPORT  INTEL AND NVIDIA SMI
+##
+##
+## VERSION 0.2 || 15/07/2022 GMT
+##    ADD BACKUP AND BACKUPALL FOR CONTAINER 
+##    DEFINE VALUES TO USE SIMPLE AS POSSIBLE
+##
+## VERSION 0.1 || 07/07/2022 GMT
+##    ADD INSTALL AND COMPOSERUPDATE FROM REMOTE REPOSITORY 
+##
+### END OF CHANGELOG 
+EOF
+}
+set -eo pipefail
+
+IFS=$'\n\t'
+
+### DEFINE SOME VARS
+temp='/tmp/docker_backup'
+pulls='/tmp/pulls'
+appdata='/opt/appdata'
+backup='/mnt/downloads/docker_backup'
+restore='/mnt/unionfs/docker_backup'
+source='https://raw.githubusercontent.com/dockserver/apps/master'
+# Exclude containers, IE:
+# ("plex" "sonarr" "radarr" "lidarr")
+exclude=("")
+
+for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
+   [[ ! -d "$folder" ]] && \
+      echo " CREATE NOW $folder" && \
+      $(which mkdir) -p "$folder" && \
+      $(which chown) 1000:1000 "$folder"
+done
 
 ## SOME IDEAS FROM THEORANGEONE
 
 function progress() {
-  $(which echo) && \
-    $(which echo) -e "\e[1;31m[RUN : ]\e[0m \e[1m$1\e[0m"
+   $(which echo) && \
+     $(which echo) -e "\e[1;31m[RUN :]\e[0m \e[1m$1\e[0m"
 }
 function progressfail() {
-  $(which echo) && \
-    $(which echo) -e "\e[0;91m[FAILED : ]\e[0m \e[1m$1\e[0m"
+   $(which echo) && \
+      $(which echo) -e "\e[0;91m[FAILED : ]\e[0m \e[1m$1\e[0m"
 }
 
 function curlapp() {
-APP=$APP
-STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" https://raw.githubusercontent.com/dockserver/apps/master/"$APP"/docker-compose.yml)
-  if test $STATUSCODE -ne 200; then
-     progressfail "we could not found the $APP"
-  else
-     $(which mkdir) -p /tmp/pulls/"$APP" && \
-     $(which curl) --silent --output /tmp/pulls/"$APP"/docker-compose.yml https://raw.githubusercontent.com/dockserver/apps/master/"$APP"/docker-compose.yml
-  fi
+app=$app
+STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$app"/docker-compose.yml)
+   if test $STATUSCODE -ne 200; then
+      progressfail "WE COULD NOT FOUND THE DOCKER-COMPOSE FOR $app"
+   else
+      $(which mkdir) -p "${pulls}"/"$app" && \
+      $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$APP"/docker-compose.yml
+   fi
+}
+
+function backupall() {
+   for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
+       backup
+   done
+}
+
+function backup() {
+   app=${app}
+   if [[ ! ${exclude[*]} =~ ${app} ]] && [[ -d "${appdata}/${app}" ]]; then
+      progress "Backing up ${app}..."
+      reqSpace=$($(which du) -sh "${appdata}/${app}" | awk '{print $1}' | sed -e 's/G//g')
+      availSpace=$($(which df) -h "${temp}" | awk 'NR==2 { print $4 }' | sed -e 's/G//g')
+      if (( availSpace < reqSpace )); then
+          #### USE TEMP FOLDER ####
+          if [[ -f "/opt/dockserver/apps/.backup/backup_excludes" ]];then
+            $(which tar) --exclude-from=/opt/dockserver/apps/.backup/backup_excludes -C "${appdata}/${app}" -pcf "${temp}/${app}".tar.gz ./
+            $(which rsync) -rv --chown=1000:1000 --exclude='*/' "${temp}/${app}".tar.gz "${backup}/${app}".tar.gz
+            $(which rm) -rf "${temp}/${app}".tar.gz
+         else
+            $(which tar) -C "${appdata}/${app}" -pcvf "${temp}/${app}".tar.gz ./
+            $(which rsync) -rv --chown=1000:1000 --exclude='*/' "${temp}/${app}".tar.gz "${backup}/${app}".tar.gz
+            $(which rm) -rf "${temp}/${app}".tar.gz
+         fi
+      else
+         #### DONT USE TEMP FOLDER ####
+         if [[ -f "/opt/dockserver/apps/.backup/backup_excludes" ]];then
+            $(which tar) --exclude-from=/opt/dockserver/apps/.backup/backup_excludes -C "${appdata}/${app}" -pcf "${backup}/${app}".tar.gz ./
+            $(which chown) -cR 1000:1000 "${backup}/${app}".tar.gz
+         else
+            $(which tar) -C "${appdata}/${app}" -pcvf "${backup}/${app}".tar.gz ./
+            $(which chown) -cR 1000:1000 "${backup}/${app}".tar.gz
+         fi
+      fi
+   fi
 }
 
 function mountdrop() {
@@ -62,50 +159,51 @@ function updatecompose() {
 function updatecontainer() {
 export ENV="/opt/appdata/compose/.env"
 if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-   mapfile -t dockers < <(eval docker ps -aq --format='{{.Names}}' | sort -u)
-   for APP in ${dockers[@]}; do
-     curlapp && progress "--> Updating $APP <--"
-     if [[ $APP == "mount" ]]; then
-        docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto down && mountdrop
-     fi
-     docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-     docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-     docker compose -f /tmp/pulls/"$APP"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
-     $(which rm) -rf /tmp/pulls/"$APP"
+   for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
+      curlapp && progress "--> Updating $app <--"
+      if [[ $app == "mount" ]]; then
+         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && mountdrop
+      fi
+      docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+      docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+      docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
+      $(which rm) -rf "${pulls}"/"$app"
    done
 exit
 }
 
 function install() {
-APP=${INSTAPP}
+app=${app}
 export ENV="/opt/appdata/compose/.env"
 if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-if [[ ! -d "/tmp/pulls" ]];then $(which mkdir) -p /tmp/pulls;fi
-if [[ -d "/tmp/pulls" ]]; then
-   for i in ${APP[@]} ; do
-      APP=$i
+if [[ -d "${pulls}" ]]; then
+   for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
       curlapp
-      if [[ -f "/tmp/pulls/"$i"/docker-compose.yml" ]]; then
-         progress "--> install $i <--" && \
-         docker compose -f /tmp/pulls/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-         docker compose -f /tmp/pulls/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-         docker compose -f /tmp/pulls/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
-         $(which rm) -rf /tmp/pulls/"$i"
+      if [[ -f "${pulls}"/"$app"/docker-compose.yml" ]]; then
+         progress "--> install $app <--" && \
+         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+         $(which rm) -rf "${pulls}"/"$app"
       else
-         progressfail "--> NO DOCKER-COMPOSE FOUND || EXIT <--"
+         progressfail "--> NO DOCKER-COMPOSE FOUND ON REMOTE REPO || EXIT <--"
       fi
    done
 else
-   progressfail "--> NO $APP FOUND || SKIPPING <--"
+   progressfail "--> NO DOCKER-COMPOSE $app FOUND ON REMOTE REPO || SKIPPING <--"
 fi
 exit
 }
 
-COMMAND=$1
-INSTAPP=${@:2}
-case "$COMMAND" in
+command=$1
+app=${@:2}
+case "$command" in
    "" ) exit ;;
+   "changes" ) changes ;;
    "install" ) install ;;
    "updatecontainer" ) updatecontainer ;;
    "updatecompose" ) updatecompose ;;
+   "backup" ) backup ;;
+   "backupall" ) backupall ;;
 esac
+
