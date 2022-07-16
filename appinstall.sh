@@ -73,12 +73,13 @@ function progressfail() {
       $(which mkdir) -p "$folder" && \
       $(which chown) 1000:1000 "$folder"
   done
-  #### LOOPING TO INSTALL DEPENDS ####
-  apps='tar curl wget pigz rsync'
-  for apps in ${apps}; do 
-    command -v ${apps} >/dev/null 2>&1 && echo >&2 "check : ${apps} is installed" || { echo >&2 "I require ${apps} but it's not installed. Now we install ${apps}."; $(which apt) install -y ${apps}; }
-  done
 
+  #### LOOPING TO INSTALL DEPENDS ####
+  apts='tar curl wget pigz rsync'
+  for apts in ${apts}; do 
+    command -v ${apts} >/dev/null 2>&1 && echo >&2 "check : ${apts} is installed" || { echo >&2 "I require ${apts} but it's not installed. Now we install ${apts}."; $(which apt) install -y ${apts}; }
+  done
+  unset apts
 
 function curlapp() {
   app=${app}
@@ -217,6 +218,7 @@ command=$1
 app=${@:2}
 case "$command" in
    "" ) exit ;;
+   "usage" ) usage ;;
    "changes" ) changes ;;
    "install" ) install ;;
    "updatecontainer" ) updatecontainer ;;
