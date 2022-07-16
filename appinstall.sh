@@ -69,18 +69,16 @@ function progressfail() {
   #### LOOPING FOLDERS ####
   for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
     [[ ! -d "$folder" ]] && \
-      progress " CREATE NOW $folder" && \
+      progress "CREATE NOW $folder" && \
       $(which mkdir) -p "$folder" && \
       $(which chown) 1000:1000 "$folder"
   done
   unset folder
-
   #### LOOPING TO INSTALL DEPENDS ####
-  aptinst='tar curl wget pigz rsync'
-  for apts in ${aptinst[*]}; do 
-    command -v ${apts} >/dev/null 2>&1 && echo >&2 "check : ${apts} is installed" || { echo >&2 "We require ${apts} but it's not installed. Now we install ${apts}."; $(which apt) install -y ${apts}; }
+  for apts in tar curl wget pigz rsync; do
+      command -v ${apts} >/dev/null 2>&1 && echo >&2 "check : ${apts} is installed" || { echo >&2 "We require ${apts} but it's not installed. Now we install ${apts}."; $(which apt) install -y ${apts}; }
   done
-  unset aptinst
+  unset apts
 
 function curlapp() {
   app=${app}
@@ -164,13 +162,13 @@ function updatecontainer() {
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
      for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
         curlapp && progress "--> Updating $app <--"
-         if [[ $app == "mount" ]]; then
-            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && mountdrop
-         fi
-         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
-         $(which rm) -rf "${pulls}"/"$app"
+        if [[ $app == "mount" ]]; then
+           docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && mountdrop
+        fi
+        docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+        docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+        docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
+        $(which rm) -rf "${pulls}"/"$app"
      done
   exit
 }
