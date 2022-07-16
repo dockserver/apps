@@ -76,7 +76,7 @@ function progressfail() {
   unset folder
   #### LOOPING TO INSTALL DEPENDS ####
   for apts in tar curl wget pigz rsync; do
-      command -v ${apts} >/dev/null 2>&1 && echo >&2 "check : ${apts} is installed" || { echo >&2 "We require ${apts} but it's not installed. Now we install ${apts}."; $(which apt) install -y ${apts}; }
+      command -v ${apts} >/dev/null 2>&1 || { echo >&2 "We require ${apts} but it's not installed. Now we install ${apts}."; $(which apt) install -y ${apts}; }
   done
   unset apts
 
