@@ -2,10 +2,6 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
----
-version: "3.9"
-## SET GLOBAL HEADER FOR COMPOSER
-services:
   plex:
     hostname: "plex"
     container_name: "plex"
@@ -14,7 +10,7 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-      - "PLEX_CLAIM=PLEX_CLAIM_ID"
+      - "PLEX_CLAIM=${PLEX_CLAIM_ID}"
       - "VERSION=${PLEXVERSION}"
       - "ADVERTISE_IP=http://plex.${DOMAIN}:443"
       - "DOCKER_MODS=ghcr.io/gilbn/theme.park:plex"
