@@ -1,0 +1,7 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+  jellyfin:
+    devices:
+      - "/dev/dri:/dev/dri"
