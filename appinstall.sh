@@ -75,7 +75,7 @@ function progressfail() {
   done
 
   #### LOOPING TO INSTALL DEPENDS ####
-  apps="tar curl wget pigz rsync"
+  apps='tar curl wget pigz rsync'
   while read; do
     command -v ${apps} >/dev/null 2>&1 || { echo >&2 "I require ${apps} but it's not installed. Now we install ${apps}."; $(which apt) install -y ${apps}; }
   done <<< $(echo ${apps[*]})
