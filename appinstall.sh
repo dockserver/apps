@@ -17,27 +17,29 @@ function changes() {
 
 $(which cat) <<- EOF
 ## CHANGELOG ##
-## PREVIEW OF VERSION 0.3 || DATE UNKNOWN YET GMT
+## PREVIEW OF VERSION 0.4 || DATE UNKNOWN YET GMT
 ## NEXT RELEASE WILL COVER : 
-##     ADD RESTORE OPTION
-##     ADD UPLOAD FUNCTIONS TO CLOUD [[ NOT USING THE UPLOADER ]]
-##     RESTORE FROM CLOUD AND INSTALL APPS
-##     AFTER RESTORE INSTALL APP WITH COMPOSER
-##     CHECK IS ENVIRONMENT FILE AVAILABLE 
-##     UPLOAD SYSTEM FOLDER TO CLOUD
-##     USE ENCRYPTED OR UNENCRYPTED OPTIONS FOR TAR FILES
-##     USE PLEX/EMBY/JELLYFIN HW SUPPORT INTEL AND NVIDIA SMI
+##    ADD RESTORE OPTION
+##    RESTORE FROM CLOUD AND INSTALL APPS
+##    AFTER RESTORE INSTALL APP WITH COMPOSER
+##    CHECK IS ENVIRONMENT FILE AVAILABLE 
+##    USE ENCRYPTED OR UNENCRYPTED OPTIONS FOR TAR FILES
+##    USE PLEX/EMBY/JELLYFIN HW SUPPORT INTEL AND NVIDIA SMI
 ##
 ##  NOTES : 
-##     BACKUP SYSTEM FOLDER [[ AFTET BACKUPALL FINAL RUN ]]
-##     BACKUP ENV AND WRITE LIVE TO JSON
-##     ADD RCLONE DOCKER RUN COMMAND TO UPLOAD BACKUPS AFTER BACKUP FILE [[ REMAP REMOTE NOT ONLY GOOGLE ]]
-##     ADD KEYGEN OPTIONS    [[ DOCKER RUN COMMANDS  || ONLY GOOGLE SIDE NEEDED ]]
-##     ADD CONFIG BACKUP
-##     RUN JSON2ENV TO WRITE JSON FILE FROM ENVIRONMENT [[ DOCKER RUN COMMAND ]]
+##    BACKUP ENV AND WRITE LIVE TO JSON
+##    ADD KEYGEN OPTIONS    [[ DOCKER RUN COMMANDS  || ONLY GOOGLE SIDE NEEDED ]]
+##    ADD CONFIG BACKUP
+##    RUN JSON2ENV TO WRITE JSON FILE FROM ENVIRONMENT [[ DOCKER RUN COMMAND ]]
 ##
 ##    SOME DEV NOTES FOR NEXT PARTS
 ## ------------------------------
+## VERSION 0.3 || 17/07/2022 GMT
+##    ADD UPLOAD FUNCTIONS TO CLOUD
+##    ADD RCLONE DOCKER RUN COMMAND TO UPLOAD BACKUPS AFTER BACKUP FILE [[ REMAP REMOTE NOT ONLY GOOGLE ]]
+##    RESTORE FROM CLOUD AND INSTALL APPS  [[ 50% ]]
+##    UPLOAD SYSTEM FOLDER TO CLOUD
+##    BACKUP SYSTEM FOLDER [[ AFTET BACKUPALL FINAL RUN ]]
 ##
 ## VERSION 0.2 || 15/07/2022 GMT
 ##    ADD BACKUP AND BACKUPALL FOR CONTAINER 
@@ -54,11 +56,15 @@ set -eo pipefail
 IFS=$'\n\t'
 
 ### DEFINE SOME VARS
+hostName="$(hostname)"
 temp='/tmp/docker_backup'
 pulls='/tmp/pulls'
 appdata='/opt/appdata'
 backup='/mnt/downloads/docker_backup'
 restore='/mnt/unionfs/docker_backup'
+rcloneConf='/opt/appdata/system/'
+rcloneCommand='$(which docker) run --rm --name=rclone-${app} -v ${rcloneConf}:/config/rclone -v ${backup}:/data:shared --user $(id -u):$(id -g) rclone/rclone'
+rcloneOpts='--checksum --stats-one-line --stats 1s --progress'
 source='https://raw.githubusercontent.com/dockserver/apps/master'
 # Exclude containers, IE:
 # ("plex" "sonarr" "radarr" "lidarr")
@@ -68,23 +74,27 @@ exclude=("")
 
 function progress() {
   $(which echo) && \
-    $(which echo) -e "\e[1;31m[RUN :]\e[0m \e[1m$1\e[0m"
+    $(which echo) -e "\e[1;31m[RUN]\e[0m \e[1m$1\e[0m"
+}
+
+function progressdone() {
+  $(which echo) && \
+    $(which echo) -e "\e[1;31m[DONE]\e[0m \e[1m$1\e[0m"
 }
 
 function progressfail() {
   $(which echo) && \
-    $(which echo) -e "\e[0;91m[FAILED : ]\e[0m \e[1m$1\e[0m"
+    $(which echo) -e "\e[0;91m[FAILED]\e[0m \e[1m$1\e[0m"
 }
 
   #### LOOPING FOLDERS ####
   for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
     [[ ! -d "$folder" ]] && \
-      progress "CREATE NOW $folder" && \
+      progress "create now $folder" && \
       $(which mkdir) -p "$folder" && \
       $(which chown) 1000:1000 "$folder"
   done
   unset folder
-  #### LOOPING TO INSTALL DEPENDS ####
   for apts in tar curl wget pigz rsync; do
       command -v ${apts} >/dev/null 2>&1 || { echo >&2 "We require ${apts} but it's not installed. Now we install ${apts}."; $(which apt) install -y ${apts}; }
   done
@@ -101,34 +111,67 @@ function curlapp() {
   fi
 }
 
+function backupSystem() {
+  app=system
+  backup
+}
+
 function backupall() {
   for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
       backup
   done
+  backupSystem
 }
 
 function backup() {
   app=${app}
   if [[ ! ${exclude[*]} =~ ${app} ]] && [[ -d "${appdata}/${app}" ]]; then
      progress "Backing up now ${app} ..."
-     reqSpace=$($(which du) -s "${appdata}/${app}" | awk '{print $1}')
+     reqSpace=$($(which du) -s "${appdata}/${app}" | awk 'NR==1 {print $1}')
      availSpace=$($(which df) "${temp}" | awk 'NR==2 { print $4 }')
      OPTIONSTAR=""
      [[ -f "/opt/dockserver/apps/.backup/backup_excludes" ]] && OPTIONSTAR="--exclude-from=/opt/dockserver/apps/.backup/backup_excludes"
-     if (( availSpace < reqSpace )); then
-        #### USE TEMP FOLDER || enough space on /tmp ####
+     if (( reqSpace < availSpace )); then
         $(which tar) "${OPTIONSTAR}" -C "${appdata}/${app}" -pcf "${temp}/${app}".tar.gz ./
-        $(which rsync) -rv --chown=1000:1000 --exclude='*/' "${temp}/${app}".tar.gz "${backup}/${app}".tar.gz
+        $(which rsync) -rv --chown=1000:1000 --exclude='*/' "${temp}/${app}".tar.gz "${backup}/${app}".tar.gz && \
         $(which rm) -rf "${temp}/${app}".tar.gz
      else
-        #### DO NOT USE TEMP FOLDER || less space on /tmp  ####
         $(which tar) "${OPTIONSTAR}" -C "${appdata}/${app}" -pcf "${backup}/${app}".tar.gz ./
         $(which chown) -cR 1000:1000 "${backup}/${app}".tar.gz
      fi
+     [[ -f "${backup}/${app}.tar.gz" ]] && \
+        tarSize=$($(which du) -sh "${backup}/${app}".tar.gz | awk 'NR==1 { print $1 }') && \
+        progressdone "Backup of ${app} with ${tarSize} is done ..."
+     [[ -f "${rcloneConf}/rclone.conf" ]] && \
+        rcloneSetRemote && \
+        rcloneUpload
   else
-    progress "skipping ${app} is excluded or under ${appdata} the folder not exists ..."
+     progress "skipping ${app} is excluded or under ${appdata} the folder not exists ..."
   fi
 }
+
+#### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
+function rcloneSetRemote() {
+  $(which docker) run --rm -v ${rcloneConf}:/config/rclone --user $(id -u):$(id -g) rclone/rclone listremotes >> /tmp/listremotes
+  if [[ $($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}') != "" ]];then
+     remote=$(which cat) /tmp/listremotes | grep "crypt" | awk 'NR==1 {print $1}')
+  else
+     remote=$(which cat) /tmp/listremotes | awk 'NR==1 {print $1}')
+  fi
+}
+
+function rcloneUpload() {
+  for apprcup in copy move; do
+     progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
+     "${rcloneCommand}" apprcup /data/${app}.tar.gz ${remote}:/backup/${app}.tar.gz "${rcloneOpts}"
+  done
+}
+
+function rcloneDownload() {
+  progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
+  "${rcloneCommand}" copy ${remote}:/backup/${app}.tar.gz /data/${app}.tar.gz "${rcloneOpts}"
+}
+#### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
 
 function mountdrop() {
   for fod in /mnt/* ;do
