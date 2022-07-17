@@ -171,15 +171,8 @@ function updatecontainer() {
   export ENV="/opt/appdata/compose/.env"
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
      for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
-        curlapp && progress "updating $app ...."
-        if [[ $app == "mount" ]]; then
-           docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && mountdrop
-        fi
-        docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-        docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-        docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
-        $(which rm) -rf "${pulls}"/"$app"
-     done
+         install
+      done
   exit
 }
 
@@ -188,11 +181,16 @@ function install() {
   export ENV="/opt/appdata/compose/.env"
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
   if [[ -d "${pulls}" ]]; then
-     for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
+     for app in ${app[@]} ; do
         curlapp
         if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
-           progress "install $app ....." && \
-           docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+           progress "install $app ....." 
+           if [[ $app == "mount" ]]; then
+              docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+              mountdrop
+           else
+              docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+           fi
            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
            $(which rm) -rf "${pulls}"/"$app"
