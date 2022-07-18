@@ -153,11 +153,13 @@ function backup() {
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
 function rcloneSetRemote() {
   $(which docker) run --rm -v ${rcloneConf}:/config/rclone --user $(id -u):$(id -g) rclone/rclone listremotes >> /tmp/listremotes
-  if [[ $($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}') != "" ]];then
+  checkcrypt=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
+  if [[ ${checkcrypt} != "" ]];then
      remote=$($(which cat) /tmp/listremotes | grep "crypt" | awk 'NR==1 {print $1}')
   else
      remote=$($(which cat) /tmp/listremotes | awk 'NR==1 {print $1}')
   fi
+    echo $remote
 }
 
 function rcloneUpload() {
