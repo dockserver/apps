@@ -167,9 +167,9 @@ function rcloneUpload() {
      $(which docker) run --rm --name=rclone-${app} \
         -v ${rcloneConf}:/config/rclone \
         -v ${backup}:/data:shared \
-        --user $(id -u):$(id -g) rclone/rclone \
+        --user 1000:1000 rclone/rclone \
         $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
-        $rcloneOpts
+        ${rcloneOpts}
   done
 }
 
