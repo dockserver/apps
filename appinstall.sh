@@ -159,19 +159,18 @@ function rcloneSetRemote() {
   else
      remote=$($(which cat) /tmp/listremotes | awk 'NR==1 {print $1}')
   fi
-    echo $remote
 }
 
 function rcloneUpload() {
   for apprcup in copy move; do
      progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
-     "${rcloneCommand}" $apprcup /data/${app}.tar.gz ${remote}:/backup/${app}.tar.gz "${rcloneOpts}"
+     ${rcloneCommand} $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz "${rcloneOpts}"
   done
 }
 
 function rcloneDownload() {
   progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
-  "${rcloneCommand}" copy ${remote}:/backup/${app}.tar.gz /data/${app}.tar.gz "${rcloneOpts}"
+  ${rcloneCommand} copy ${remote}:/backup/${app}.tar.gz /data/${app}.tar.gz "${rcloneOpts}"
 }
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
 
