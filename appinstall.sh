@@ -154,9 +154,9 @@ function backup() {
 function rcloneSetRemote() {
   $(which docker) run --rm -v ${rcloneConf}:/config/rclone --user $(id -u):$(id -g) rclone/rclone listremotes >> /tmp/listremotes
   if [[ $($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}') != "" ]];then
-     remote=$(which cat) /tmp/listremotes | grep "crypt" | awk 'NR==1 {print $1}')
+     remote=$($(which cat) /tmp/listremotes | grep "crypt" | awk 'NR==1 {print $1}')
   else
-     remote=$(which cat) /tmp/listremotes | awk 'NR==1 {print $1}')
+     remote=$($(which cat) /tmp/listremotes | awk 'NR==1 {print $1}')
   fi
 }
 
