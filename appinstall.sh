@@ -63,8 +63,6 @@ appdata='/opt/appdata'
 backup='/mnt/downloads/docker_backup'
 restore='/mnt/unionfs/docker_backup'
 rcloneConf='/opt/appdata/system/'
-rcloneCommand='$(which docker) run --rm --name=rclone-${app} -v ${rcloneConf}:/config/rclone -v ${backup}:/data:shared --user $(id -u):$(id -g) rclone/rclone'
-rcloneOpts='--checksum --stats-one-line --stats 1s --progress'
 source='https://raw.githubusercontent.com/dockserver/apps/master'
 # Exclude containers, IE:
 # ("plex" "sonarr" "radarr" "lidarr")
@@ -164,14 +162,29 @@ function rcloneSetRemote() {
 function rcloneUpload() {
   for apprcup in copy move; do
      progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
-     $(which docker) run --rm --name=rclone-${app} -v ${rcloneConf}:/config/rclone -v ${backup}:/data:shared --user 1000:1000 rclone/rclone $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz --checksum --stats-one-line --stats=1s --progress
+     $(which docker) run --rm --name=rclone-${app} \
+       -v ${rcloneConf}:/config/rclone \
+       -v ${backup}:/data:shared --user 1000:1000 \
+       rclone/rclone $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
+       --checksum --stats-one-line --stats=1s --progress
+     progressdone "Uploading of ${app}.tar.gz is done"
   done
 }
 
 function rcloneDownload() {
   progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
-  ${rcloneCommand} copy ${remote}:/backup/${app}.tar.gz /data/${app}.tar.gz "${rcloneOpts}"
+     $(which docker) run --rm --name=rclone-${app} \
+       -v ${rcloneConf}:/config/rclone \
+       -v ${backup}:/data:shared --user 1000:1000 \
+       rclone/rclone copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
+       --checksum --stats-one-line --stats=1s --progress
+     [[ -f "${backup}/${app}.tar.gz" ]] && \
+       progressdone "downloading of ${app}.tar.gz is done" && \
+       install
+     [[ ! -f "${backup}/${app}.tar.gz" ]] && \
+       progressfail "downloading of ${app}.tar.gz is failed"     
 }
+
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
 
 function mountdrop() {
