@@ -17,7 +17,7 @@ function changes() {
 
 $(which cat) <<- EOF
 ## CHANGELOG ##
-## PREVIEW OF VERSION 0.4 || DATE UNKNOWN YET GMT
+## PREVIEW OF VERSION 0.XXXX || DATE UNKNOWN YET GMT
 ## NEXT RELEASE WILL COVER : 
 ##    ADD RESTORE OPTION
 ##    RESTORE FROM CLOUD AND INSTALL APPS
@@ -28,18 +28,24 @@ $(which cat) <<- EOF
 ##
 ##  NOTES : 
 ##    BACKUP ENV AND WRITE LIVE TO JSON
-##    ADD KEYGEN OPTIONS    [[ DOCKER RUN COMMANDS  || ONLY GOOGLE SIDE NEEDED ]]
+##    ADD KEYGEN OPTIONS    [[ DOCKER RUN COMMANDS || ONLY GOOGLE SIDE NEEDED ]]
 ##    ADD CONFIG BACKUP
 ##    RUN JSON2ENV TO WRITE JSON FILE FROM ENVIRONMENT [[ DOCKER RUN COMMAND ]]
 ##
 ##    SOME DEV NOTES FOR NEXT PARTS
 ## ------------------------------
+## VERSION 0.4 || 18/07/2022 GMT
+##    ADD DOCKER RECONNECT [[ JUST STOPPED/EXITES CONTAINERS ]]
+##    ADD DOCKER RECONNECT ALL CONTAINERS
+##    RESTORE FROM CLOUD AND INSTALL APPS  [[ 75% ]]
+##    FIX: UPLOAD FUNCTION TO CLOUD
+##
 ## VERSION 0.3 || 17/07/2022 GMT
 ##    ADD UPLOAD FUNCTIONS TO CLOUD
 ##    ADD RCLONE DOCKER RUN COMMAND TO UPLOAD BACKUPS AFTER BACKUP FILE [[ REMAP REMOTE NOT ONLY GOOGLE ]]
 ##    RESTORE FROM CLOUD AND INSTALL APPS  [[ 50% ]]
 ##    UPLOAD SYSTEM FOLDER TO CLOUD
-##    BACKUP SYSTEM FOLDER [[ AFTET BACKUPALL FINAL RUN ]]
+##    BACKUP SYSTEM FOLDER [[ AFTER BACKUPALL FINAL RUN ]]
 ##
 ## VERSION 0.2 || 15/07/2022 GMT
 ##    ADD BACKUP AND BACKUPALL FOR CONTAINER 
@@ -87,10 +93,10 @@ function progressfail() {
 
   #### LOOPING FOLDERS ####
   for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
-    [[ ! -d "$folder" ]] && \
-      progress "create now $folder" && \
-      $(which mkdir) -p "$folder" && \
-      $(which chown) 1000:1000 "$folder"
+      [[ ! -d "$folder" ]] && \
+        progress "create now $folder" && \
+        $(which mkdir) -p "$folder" && \
+        $(which chown) 1000:1000 "$folder"
   done
   unset folder
   for apts in tar curl wget pigz rsync; do
@@ -153,7 +159,7 @@ function rcloneSetRemote() {
   $(which docker) run --rm -v ${rcloneConf}:/config/rclone --user $(id -u):$(id -g) rclone/rclone listremotes >> /tmp/listremotes
   checkcrypt=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
   if [[ ${checkcrypt} != "" ]];then
-     remote=$($(which cat) /tmp/listremotes | grep "crypt" | awk 'NR==1 {print $1}')
+     remote=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
   else
      remote=$($(which cat) /tmp/listremotes | awk 'NR==1 {print $1}')
   fi
@@ -161,13 +167,13 @@ function rcloneSetRemote() {
 
 function rcloneUpload() {
   for apprcup in copy move; do
-     progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
-     $(which docker) run --rm --name=rclone-${app} \
-       -v ${rcloneConf}:/config/rclone \
-       -v ${backup}:/data:shared --user 1000:1000 \
-       rclone/rclone $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
-       --checksum --stats-one-line --stats=1s --progress
-     progressdone "Uploading of ${app}.tar.gz is done"
+      progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
+      $(which docker) run --rm --name=rclone-${app} \
+        -v ${rcloneConf}:/config/rclone \
+        -v ${backup}:/data:shared --user 1000:1000 \
+        rclone/rclone $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
+        --checksum --stats-one-line --stats=1s --progress
+      progressdone "Uploading of ${app}.tar.gz is done"
   done
 }
 
@@ -189,15 +195,49 @@ function rcloneDownload() {
 
 function mountdrop() {
   for fod in /mnt/* ;do
-     basename "$fod" >/dev/null
-     FOLDER="$(basename -- $fod)"
-     IFS=- read -r <<< "$ACT"
-     if ! ls -1p "$fod/" >/dev/null ; then
-        echo "drop /mnt/$FOLDER/ .... "
-        $(which fusermount) -uzq /mnt/$FOLDER
-     else
-        echo "no drop needed /mnt/$FOLDER/"
-     fi
+      basename "$fod" >/dev/null
+      FOLDER="$(basename -- $fod)"
+      IFS=- read -r <<< "$ACT"
+      if ! ls -1p "$fod/" >/dev/null ; then
+         progress "drop /mnt/$FOLDER/ .... "
+         $(which fusermount) -uzq /mnt/$FOLDER
+      else
+         progress "no drop needed /mnt/$FOLDER/"
+      fi
+  done
+}
+
+function reconnect() {
+  for id in `$($(which docker) ps -q -f 'status=exited' -f 'status=dead' -f 'exited=0') | cut -f2 -d\/ | sort -u`;do
+      for app in `$(which docker) inspect --format='{{.Name}}' $id`;do
+          progress "stopping now $app...." && \
+          $(which docker) stop $app &>/dev/null
+          if [[ $app == "mount" ]]; then
+             mountdrop
+          fi
+          progress "drop $app from proxy network...." && \
+            $(which docker) network disconnect proxy $app &>/dev/null
+          progress "reconnect $app to proxy network...." && \
+            $(which docker) network connect proxy $app &>/dev/null
+          progress "docker start $app ...." && \
+            $(which docker) start $app &>/dev/null
+      done
+  done
+}
+
+function reconnectall() {
+  for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
+      progress "stopping now $app...." && \
+      $(which docker) stop $app &>/dev/null
+      if [[ $app == "mount" ]]; then
+         mountdrop
+      fi
+      progress "drop $app from proxy network...." && \
+        $(which docker) network disconnect proxy $app &>/dev/null
+      progress "reconnect $app to proxy network...." && \
+        $(which docker) network connect proxy $app &>/dev/null
+      progress "docker start $app ...." && \
+        $(which docker) start $app &>/dev/null
   done
 }
 
@@ -270,6 +310,8 @@ $(which cat) <<- EOF
   ## install          | to install one or more apps in loop
   ## backup           | to backup one app
   ## backupall        | to backup all running dockers
+  ## reconnect        | reconnect all exited \ stopped apps
+  ## reconnectall     | reconnect all apps to proxy network
   ## updatecompose    | to update the local installed composer version
   ## updatecontainer  | to update all running dockers
   #####
@@ -289,6 +331,8 @@ case "$command" in
    "updatecompose" ) updatecompose ;;
    "backup" ) backup ;;
    "backupall" ) backupall ;;
+   "reconnect" ) reconnect ;;
+   "reconnectall") reconnectall ;;
 esac
 
 #/\E_O_F/\#
