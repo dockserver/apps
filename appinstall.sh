@@ -93,10 +93,12 @@ function progressfail() {
 
   #### LOOPING FOLDERS ####
   for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
+      [[ -d "$folder" ]] && \
+         $(which chown) 1000:1000 "$folder"
       [[ ! -d "$folder" ]] && \
-        progress "create now $folder" && \
-        $(which mkdir) -p "$folder" && \
-        $(which chown) 1000:1000 "$folder"
+         progress "create now $folder" && \
+         $(which mkdir) -p "$folder" && \
+         $(which chown) 1000:1000 "$folder"
   done
   unset folder
   for apts in tar curl wget pigz rsync; do
@@ -156,7 +158,8 @@ function backup() {
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
 function rcloneSetRemote() {
-  $(which docker) run --rm -v ${rcloneConf}:/config/rclone --user $(id -u):$(id -g) rclone/rclone listremotes >> /tmp/listremotes
+  $(which docker) pull rclone/rclone && \
+  $(which docker) run --rm -v ${rcloneConf}:/config/rclone --user 1000:1000 rclone/rclone listremotes >> /tmp/listremotes
   checkcrypt=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
   if [[ ${checkcrypt} != "" ]];then
      remote=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
@@ -172,23 +175,23 @@ function rcloneUpload() {
         -v ${rcloneConf}:/config/rclone \
         -v ${backup}:/data:shared --user 1000:1000 \
         rclone/rclone $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
-        --checksum --stats-one-line --stats=1s --progress
+        --stats-one-line --stats=1s --progress
       progressdone "Uploading of ${app}.tar.gz is done"
   done
 }
 
 function rcloneDownload() {
   progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
-     $(which docker) run --rm --name=rclone-${app} \
-       -v ${rcloneConf}:/config/rclone \
-       -v ${backup}:/data:shared --user 1000:1000 \
-       rclone/rclone copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
-       --checksum --stats-one-line --stats=1s --progress
-     [[ -f "${backup}/${app}.tar.gz" ]] && \
-       progressdone "downloading of ${app}.tar.gz is done" && \
-       install
-     [[ ! -f "${backup}/${app}.tar.gz" ]] && \
-       progressfail "downloading of ${app}.tar.gz is failed"     
+      $(which docker) run --rm --name=rclone-${app} \
+        -v ${rcloneConf}:/config/rclone \
+        -v ${backup}:/data:shared --user 1000:1000 \
+        rclone/rclone copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
+        --stats-one-line --stats=1s --progress
+      [[ -f "${backup}/${app}.tar.gz" ]] && \
+        progressdone "downloading of ${app}.tar.gz is done" && \
+        install
+      [[ ! -f "${backup}/${app}.tar.gz" ]] && \
+        progressfail "downloading of ${app}.tar.gz is failed"     
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
