@@ -68,7 +68,17 @@ pulls='/tmp/pulls'
 appdata='/opt/appdata'
 backup='/mnt/downloads/docker_backup'
 restore='/mnt/unionfs/docker_backup'
+
+## RCLONE PART
 rcloneConf='/opt/appdata/system/'
+rclonePULL="$(which docker) pull rclone/rclone"
+rcloneCMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" --user 1000:1000"
+rcloneCMD+=" rclone/rclone"
+rcloneBACKUPCMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" -v "${backup}:/data:shared" --user 1000:1000"
+rcloneBACKUPCMD+=" rclone/rclone"
+rcloneRESTORECMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" -v "${backup}:/data:shared" --user 1000:1000"
+rcloneRESTORECMD+=" rclone/rclone"
+
 source='https://raw.githubusercontent.com/dockserver/apps/master'
 # Exclude containers, IE:
 # ("plex" "sonarr" "radarr" "lidarr")
@@ -157,9 +167,9 @@ function backup() {
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
-function rcloneSetRemote() {
-  $(which docker) pull rclone/rclone && \
-  $(which docker) run --rm -v ${rcloneConf}:/config/rclone --user 1000:1000 rclone/rclone listremotes >> /tmp/listremotes
+function rcloneSetRemote() 
+  ${rclonePULL} && \
+  ${rcloneCMD} listremotes >> /tmp/listremotes
   checkcrypt=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
   if [[ ${checkcrypt} != "" ]];then
      remote=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
@@ -171,10 +181,7 @@ function rcloneSetRemote() {
 function rcloneUpload() {
   for apprcup in copy move; do
       progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
-      $(which docker) run --rm --name=rclone-${app} \
-        -v ${rcloneConf}:/config/rclone \
-        -v ${backup}:/data:shared --user 1000:1000 \
-        rclone/rclone $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
+      ${rcloneBACKUPCMD} $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
         --stats-one-line --stats=1s --progress
       progressdone "Uploading of ${app}.tar.gz is done"
   done
@@ -182,10 +189,7 @@ function rcloneUpload() {
 
 function rcloneDownload() {
   progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
-      $(which docker) run --rm --name=rclone-${app} \
-        -v ${rcloneConf}:/config/rclone \
-        -v ${backup}:/data:shared --user 1000:1000 \
-        rclone/rclone copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
+      ${rcloneRESTORECMD} copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
         --stats-one-line --stats=1s --progress
       [[ -f "${backup}/${app}.tar.gz" ]] && \
         progressdone "downloading of ${app}.tar.gz is done" && \
