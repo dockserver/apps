@@ -71,20 +71,6 @@ restore='/mnt/unionfs/docker_backup'
 
 ## RCLONE PART
 rcloneConf='/opt/appdata/system/'
-rclonePULL="$(which docker) pull "
-rclonePULL+=" rclone/rclone"
-## Listremotes ##
-rcloneCMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" --user 1000:1000"
-rcloneCMD+=" rclone/rclone"
-rcloneCMD+=" listremotes"
-## BACKUP ##
-rcloneBACKUPCMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" -v "${backup}:/data:shared" --user 1000:1000"
-rcloneBACKUPCMD+=" rclone/rclone"
-rcloneBACKUPCMD+=" move /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz --stats-one-line --stats=1s --progress"
-## RESTORE ##
-rcloneRESTORECMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" -v "${backup}:/data:shared" --user 1000:1000"
-rcloneRESTORECMD+=" rclone/rclone"
-rcloneRESTORECMD+=" copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz --stats-one-line --stats=1s --progress"
 
 source='https://raw.githubusercontent.com/dockserver/apps/master'
 # Exclude containers, IE:
@@ -175,6 +161,8 @@ function backup() {
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
 function rcloneSetRemote() {
+  rclonePULL="$(which docker) pull rclone/rclone"
+  rcloneCMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" --user 1000:1000 rclone/rclone listremotes"
   ${rclonePULL}
   ${rcloneCMD} >> /tmp/listremotes
   checkcrypt=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
@@ -186,14 +174,16 @@ function rcloneSetRemote() {
 }
 
 function rcloneUpload() {
-  ##for apprcup in copy move; do
+  rcloneBACKUPCMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" -v "${backup}:/data:shared" --user 1000:1000 rclone/rclone $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz --stats-one-line --stats=1s --progress"
+  for apprcup in copy move; do
       progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
-      ${rcloneBACKUPCMD} 
+      ${rcloneBACKUPCMD} && \
       progressdone "Uploading of ${app}.tar.gz is done"
-  ##done
+  done
 }
 
 function rcloneDownload() {
+  rcloneRESTORECMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" -v "${backup}:/data:shared" --user 1000:1000 rclone/rclone copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz --stats-one-line --stats=1s --progress"
   progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
       ${rcloneRESTORECMD}
       [[ -f "${backup}/${app}.tar.gz" ]] && \
