@@ -161,10 +161,10 @@ function backup() {
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
 function rcloneSetRemote() {
-  rclonePULL="$(which docker) pull rclone/rclone"
-  rcloneCMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" --user 1000:1000 rclone/rclone listremotes"
-  ${rclonePULL}
-  ${rcloneCMD} >> /tmp/listremotes
+  $(which docker) pull rclone/rclone
+  [[ -f "/tmp/listremotes" ]] && \
+     $(which rm) -rf /tmp/listremotes
+  $(which docker) run --rm -v "${rcloneConf}:/config/rclone" --user 1000:1000 rclone/rclone listremotes >> /tmp/listremotes
   checkcrypt=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
   if [[ ${checkcrypt} != "" ]];then
      remote=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
@@ -174,23 +174,31 @@ function rcloneSetRemote() {
 }
 
 function rcloneUpload() {
-  rcloneBACKUPCMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" -v "${backup}:/data:shared" --user 1000:1000 rclone/rclone $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz --stats-one-line --stats=1s --progress"
   for apprcup in copy move; do
       progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
-      ${rcloneBACKUPCMD} && \
+      $(which docker) run --rm \
+         -v "${rcloneConf}:/config/rclone" \
+         -v "${backup}:/data:shared" \
+         --user 1000:1000 rclone/rclone \
+         $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
+         -vP --stats-one-line --stats=1s && \
       progressdone "Uploading of ${app}.tar.gz is done"
   done
 }
 
 function rcloneDownload() {
-  rcloneRESTORECMD="$(which docker) run --rm -v "${rcloneConf}:/config/rclone" -v "${backup}:/data:shared" --user 1000:1000 rclone/rclone copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz --stats-one-line --stats=1s --progress"
   progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
-      ${rcloneRESTORECMD}
+      $(which docker) run --rm \
+         -v "${rcloneConf}:/config/rclone" \
+         -v "${backup}:/data:shared" \
+         --user 1000:1000 rclone/rclone \
+         copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
+         -vP --stats-one-line --stats=1s
       [[ -f "${backup}/${app}.tar.gz" ]] && \
-        progressdone "downloading of ${app}.tar.gz is done" && \
-        install
+         progressdone "downloading of ${app}.tar.gz is done" && \
+         install
       [[ ! -f "${backup}/${app}.tar.gz" ]] && \
-        progressfail "downloading of ${app}.tar.gz is failed"     
+         progressfail "downloading of ${app}.tar.gz is failed"     
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
