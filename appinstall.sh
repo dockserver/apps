@@ -167,7 +167,7 @@ function backup() {
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
-function rcloneSetRemote() 
+function rcloneSetRemote() {
   ${rclonePULL} && \
   ${rcloneCMD} listremotes >> /tmp/listremotes
   checkcrypt=$($(which cat) /tmp/listremotes | grep crypt | awk 'NR==1 {print $1}')
