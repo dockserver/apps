@@ -175,12 +175,14 @@ function rcloneSetRemote() {
 
 function rcloneUpload() {
   for apprcup in copy move; do
+      backupfolder=backup
+      if [[ $apprcup == move ]]; then backupfolder="${hostName}/backup" ; fi
       progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
       $(which docker) run --rm \
          -v "${rcloneConf}:/config/rclone" \
          -v "${backup}:/data:shared" \
          --user 1000:1000 rclone/rclone \
-         $apprcup /data/${app}.tar.gz ${remote}/backup/${app}.tar.gz \
+         $apprcup /data/${app}.tar.gz ${remote}/${backup}/${app}.tar.gz \
          -vP --stats-one-line --stats=1s && \
       progressdone "Uploading of ${app}.tar.gz is done"
   done
