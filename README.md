@@ -14,7 +14,21 @@ source ~/.bashrc
 ### COMMANDS 
 
 1. appinstall [ command ] ....
-1. appinstall install [ appname  1 2 3 4 5 so many you want ]
+
+```
+  ##### OPTIONS       | WHAT IT DOES
+  ##
+  ## usage            | shows the options / how to use
+  ## changes          | shows the changes on this file
+  ## install          | to install one or more apps in loop
+  ## backup           | to backup one app
+  ## backupall        | to backup all running dockers
+  ## reconnect        | reconnect all exited \ stopped apps
+  ## reconnectall     | reconnect all apps to proxy network
+  ## updatecompose    | to update the local installed composer version
+  ## updatecontainer  | to update all running dockers
+  #####
+```
 
 .... new commands will be added soon ....
 
