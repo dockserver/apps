@@ -219,6 +219,32 @@ function mountdrop() {
   done
 }
 
+function uploaderkeys() {
+
+$(which mkdir) -p "${appdata}/system/servicekeys" "${appdata}/system/gcloud"
+RUNCOMMAND="docker run -it -v "${appdata}/system/:/system"-v "${appdata}/system/gcloud:/root/.config/gcloud""
+ENV_VARS=("ACCOUNT" "PROJECT" "SANAME" "NUMGDSAS" "PROGNAME" "TEAMDRIVEID" "ENCRYPT" "PASSWORD" "SALT")
+for ENV_VAR in "${ENV_VARS[@]}"; do unset ${ENV_VAR} ; done
+for ENV_VAR in "${ENV_VARS[@]}"; do
+    if [[ -z ${!ENV_VAR} ]];then
+       read -erp "set now ${ENV_VAR} " typed </dev/tty
+       if [[ $typed == z ]] || [[ $typed == Z ]] || [[ $typed == EXIT ]] || [[ $typed == exit ]]; then
+          $(which echo) "exit now || you can rerun it ;)"
+       elif [[ $typed != "" ]];then
+          RUNCOMMAND+=" --env ${ENV_VAR}=$typed "
+       else
+          $(which echo) "${ENV_VAR} is not set"
+       fi
+    fi
+done
+
+RUNCOMMAND+=" ghcr.io/dockserver/docker-gdsa"
+RUNCOMMAND+=" /bin/bash gdsastart.sh"
+
+${RUNCOMMAND}
+
+}
+
 function reconnect() {
   for id in `$($(which docker) ps -q -f 'status=exited' -f 'status=dead' -f 'exited=0') | cut -f2 -d\/ | sort -u`;do
       for app in `$(which docker) inspect --format='{{.Name}}' $id`;do
@@ -322,6 +348,7 @@ $(which cat) <<- EOF
   ## install          | to install one or more apps in loop
   ## backup           | to backup one app
   ## backupall        | to backup all running dockers
+  ## uploaderkeys     | to generate google_service_keys
   ## reconnect        | reconnect all exited \ stopped apps
   ## reconnectall     | reconnect all apps to proxy network
   ## updatecompose    | to update the local installed composer version
