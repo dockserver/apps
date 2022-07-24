@@ -241,30 +241,31 @@ function backupall() {
 }
 
 function backup() {
-  app=$app
-  if [[ ! ${exclude[*]} =~ ${app} ]] && [[ -d "${appdata}/${app}" ]]; then
-     progress "Backing up now ${app} ..."
-     reqSpace=$($(which du) -s "${appdata}/${app}" | awk 'NR==1 {print $1}')
-     availSpace=$($(which df) "${temp}" | awk 'NR==2 { print $4 }')
-     OPTIONSTAR=""
-     [[ -f "/opt/dockserver/apps/.backup/backup_excludes" ]] && OPTIONSTAR="--exclude-from=/opt/dockserver/apps/.backup/backup_excludes"
-     if (( reqSpace < availSpace )); then
-        $(which tar) "${OPTIONSTAR}" -C "${appdata}/${app}" -pcf "${temp}/${app}".tar.gz ./
-        $(which rsync) -rv --chown=1000:1000 --exclude='*/' "${temp}/${app}".tar.gz "${backup}/${app}".tar.gz && \
-        $(which rm) -rf "${temp}/${app}".tar.gz
-     else
-        $(which tar) "${OPTIONSTAR}" -C "${appdata}/${app}" -pcf "${backup}/${app}".tar.gz ./
-        $(which chown) -cR 1000:1000 "${backup}/${app}".tar.gz
-     fi
-     [[ -f "${backup}/${app}.tar.gz" ]] && \
-         tarSize=$($(which du) -sh "${backup}/${app}".tar.gz | awk 'NR==1 { print $1 }') && \
-         progressdone "Backup of ${app} with ${tarSize} is done ..."
-     [[ -f "${rcloneConf}rclone.conf" ]] && \
-         rcloneSetRemote && \
-         rcloneUpload
-  else
-     progress "skipping ${app} is excluded or under ${appdata} the folder not exists ..."
-  fi
+  for app in ${apps[@]}; do
+      if [[ ! ${exclude[*]} =~ ${app} ]] && [[ -d "${appdata}/${app}" ]]; then
+         progress "Backing up now ${app} ..."
+         reqSpace=$($(which du) -s "${appdata}/${app}" | awk 'NR==1 {print $1}')
+         availSpace=$($(which df) "${temp}" | awk 'NR==2 { print $4 }')
+         OPTIONSTAR=""
+         [[ -f "/opt/dockserver/apps/.backup/backup_excludes" ]] && OPTIONSTAR="--exclude-from=/opt/dockserver/apps/.backup/backup_excludes"
+         if (( reqSpace < availSpace )); then
+            $(which tar) "${OPTIONSTAR}" -C "${appdata}/${app}" -pcf "${temp}/${app}".tar.gz ./
+            $(which rsync) -rv --chown=1000:1000 --exclude='*/' "${temp}/${app}".tar.gz "${backup}/${app}".tar.gz && \
+            $(which rm) -rf "${temp}/${app}".tar.gz
+         else
+            $(which tar) "${OPTIONSTAR}" -C "${appdata}/${app}" -pcf "${backup}/${app}".tar.gz ./
+            $(which chown) -cR 1000:1000 "${backup}/${app}".tar.gz
+         fi
+         [[ -f "${backup}/${app}.tar.gz" ]] && \
+             tarSize=$($(which du) -sh "${backup}/${app}".tar.gz | awk 'NR==1 { print $1 }') && \
+             progressdone "Backup of ${app} with ${tarSize} is done ..."
+         [[ -f "${rcloneConf}rclone.conf" ]] && \
+             rcloneSetRemote && \
+             rcloneUpload
+      else
+         progress "skipping ${app} is excluded or under ${appdata} the folder not exists ..."
+      fi
+  done
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
@@ -290,7 +291,7 @@ function rcloneUpload() {
          -v "${rcloneConf}:/config/rclone" \
          -v "${backup}:/data:shared" \
          --user 1000:1000 rclone/rclone \
-         $apprcup /data/${app}.tar.gz ${remote}/${backup}/${app}.tar.gz \
+         $apprcup /data/${app}.tar.gz ${remote}${backup}/${app}.tar.gz \
          -vP --stats-one-line --stats=1s && \
       progressdone "Uploading of ${app}.tar.gz is done"
   done
@@ -431,7 +432,7 @@ function install() {
   export ENV="/opt/appdata/compose/.env"
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
   if [[ -d "${pulls}" ]]; then
-     for app in ${app[@]} ; do
+     for app in ${apps[@]} ; do
          curlapp
          if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
             progress "install $app ....." 
@@ -484,7 +485,7 @@ unset apts
 ### COMMANDS ###
 
 command=$1
-app=${@:2}
+apps=${@:2}
 
 case "$command" in
    "" ) exit ;;
