@@ -18,24 +18,25 @@ function changes() {
 $(which cat) <<- EOF
 ## CHANGELOG ##
 ## PREVIEW OF VERSION 0.XXXX || DATE UNKNOWN YET GMT
-## NEXT RELEASE WILL COVER : 
-##    ADD RESTORE OPTION
-##    RESTORE FROM CLOUD AND INSTALL APPS
-##    AFTER RESTORE INSTALL APP WITH COMPOSER
+## NEXT RELEASE WILL COVER :
 ##    CHECK IS ENVIRONMENT FILE AVAILABLE 
 ##    USE ENCRYPTED OR UNENCRYPTED OPTIONS FOR TAR FILES
 ##    USE PLEX/EMBY/JELLYFIN HW SUPPORT INTEL AND NVIDIA SMI
 ##
-##  NOTES : 
+##  NOTES :
 ##    BACKUP ENV AND WRITE LIVE TO JSON
 ##    ADD KEYGEN OPTIONS    [[ DOCKER RUN COMMANDS || ONLY GOOGLE SIDE NEEDED ]]
 ##    ADD CONFIG BACKUP
 ##    RUN JSON2ENV TO WRITE JSON FILE FROM ENVIRONMENT [[ DOCKER RUN COMMAND ]]
 ##
 ##    SOME DEV NOTES FOR NEXT PARTS
+##
 ## ------------------------------
 ## VERSION 0.5 || 24/07/2022 GMT
 ##    ADD make_dir and  checkcommand function
+##    ADD RESTORE OPTION
+##    RESTORE FROM CLOUD AND INSTALL APPS
+##    AFTER RESTORE INSTALL APP WITH COMPOSER
 ##    ADD Uploaderkeys options [[ EXPERIMENTAL ]]
 ##    FEATURE: cleanup script to use more functions
 ##
@@ -57,9 +58,9 @@ $(which cat) <<- EOF
 ##    DEFINE VALUES TO USE SIMPLE AS POSSIBLE
 ##
 ## VERSION 0.1 || 07/07/2022 GMT
-##    ADD INSTALL AND COMPOSERUPDATE FROM REMOTE REPOSITORY 
+##    ADD INSTALL AND COMPOSERUPDATE FROM REMOTE REPOSITORY
 ##
-### END OF CHANGELOG 
+### END OF CHANGELOG
 EOF
 }
 
@@ -98,13 +99,13 @@ function progressfail() {
 
 function make_dir() {
   if [[ ! -d "$1" ]]; then
-     $(which mkdir) -p "$1" && \          
+     $(which mkdir) -p "$1" && \
      progress "Folder not exist || create now %s" "$1" && \
      $(which chown) 1000:1000 $1
   else
      progress "Folder exist || set now permissions on $1" && \
      $(which chown) 1000:1000 "$1"
-  fi    
+  fi
 }
 
 function command_exists() {
@@ -125,8 +126,7 @@ function format_size() {
    # ensure the raw value is a number, otherwise return blank
    re='^[0-9]+$'
    if ! [[ $RAW =~ $re ]] ; then
-      echo "" 
-      return 0
+      echo "" && return 0
    fi
    if [ "$RAW" -ge 1073741824 ]; then
       DENOM=1073741824
@@ -233,14 +233,17 @@ function backupSystem() {
 }
 
 function backupall() {
-  for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
-      backup
-  done
+  for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do backup ; done
+  backupSystem
+}
+
+function backupsome() {
+  app=${app}
+  for app in ${app[@]} ; do backup ; done
   backupSystem
 }
 
 function backup() {
-  app=${app}
   if [[ ! ${exclude[*]} =~ ${app} ]] && [[ -d "${appdata}/${app}" ]]; then
      progress "Backing up now ${app} ..."
      reqSpace=$($(which du) -s "${appdata}/${app}" | awk 'NR==1 {print $1}')
@@ -261,14 +264,14 @@ function backup() {
      [[ -f "${rcloneConf}rclone.conf" ]] && \
         rcloneSetRemote && \
         rcloneUpload
-  else
+   else
      progress "skipping ${app} is excluded or under ${appdata} the folder not exists ..."
-  fi
+   fi
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
 function rcloneSetRemote() {
-  $(which docker) pull rclone/rclone
+  $(which docker) pull rclone/rclone &>/dev/null
   [[ -f "/tmp/listremotes" ]] && \
      $(which rm) -rf /tmp/listremotes
   $(which docker) run --rm -v "${rcloneConf}:/config/rclone" --user 1000:1000 rclone/rclone listremotes >> /tmp/listremotes
@@ -296,21 +299,31 @@ function rcloneUpload() {
 }
 
 function rcloneDownload() {
+  rcloneSetRemote
   progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
-      $(which docker) run --rm \
+       $(which docker) pull rclone/rclone &>/dev/null
+       $(which docker) run --rm \
           -v "${rcloneConf}:/config/rclone" \
           -v "${backup}:/data:shared" \
           --user 1000:1000 rclone/rclone \
-          copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
-          -vP --stats-one-line --stats=1s
+          copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz -vP --stats=1s
       [[ -f "${backup}/${app}.tar.gz" ]] && \
           progressdone "downloading of ${app}.tar.gz is done" && \
+          make_dir "${appdata}/${app}" && \
+          $(which unpigz) -dcqp 8 ${backup}/${app}.tar.gz | $(which pv) -pterb | $(which tar) pxf - -C "${appdata}/${app}" --strip-components=1
           install
+          $(which rm) -rf ${backup}/${app}.tar.gz
       [[ ! -f "${backup}/${app}.tar.gz" ]] && \
-          progressfail "downloading of ${app}.tar.gz is failed"     
+          progressfail "downloading of ${app}.tar.gz is failed" && \
+          sleep 90 && exit 0
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
+
+function restoreon() {
+  app=${app}
+  for app in ${app[@]} ; do rcloneDownload ; done
+}
 
 function mountdrop() {
   for fod in /mnt/* ;do
@@ -399,7 +412,7 @@ function updatecompose() {
   VERSION="$($(which curl) -sX GET https://api.github.com/repos/docker/compose/releases/latest | jq --raw-output '.tag_name')"
   ARCH=$(uname -m)
   progress "installing now docker composer $VERSION on $ARCH ...." && \
-  $(which mkdir) -p $DOCKER_CONFIG/cli-plugins && \
+  make_dir $DOCKER_CONFIG/cli-plugins && \
   $(which curl) -fsSL "https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-linux-${ARCH}" -o $DOCKER_CONFIG/cli-plugins/docker-compose
   if test -f $DOCKER_CONFIG/cli-plugins/docker-compose;then
      $(which chmod) +x $DOCKER_CONFIG/cli-plugins/docker-compose && \
@@ -420,9 +433,7 @@ function updatecompose() {
 function updatecontainer() {
   export ENV="/opt/appdata/compose/.env"
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-     for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
-         install
-      done
+  for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do install ; done
   exit
 }
 
@@ -455,11 +466,14 @@ $(which cat) <<- EOF
   ##### OPTIONS       | WHAT IT DOES
   ##
   ## usage            | shows the options / how to use
+  ## showsystem       | shows system status
   ## changes          | shows the changes on this file
   ## install          | to install one or more apps in loop
   ## backup           | to backup one app
+  ## backupsome       | backup more as one app in loop
   ## backupall        | to backup all running dockers
   ## uploaderkeys     | to generate google_service_keys
+  ## restoreon        | restore one app from cloud and install it
   ## reconnect        | reconnect all exited \ stopped apps
   ## reconnectall     | reconnect all apps to proxy network
   ## updatecompose    | to update the local installed composer version
@@ -473,7 +487,7 @@ for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
     make_dir "$folder"
 done
 unset folder
-for apts in tar curl wget pigz rsync; do
+for apts in tar curl wget pigz rsync pv; do
     command_exists ${apts}
 done
 unset apts
@@ -490,7 +504,9 @@ case "$command" in
    "updatecompose" ) updatecompose ;;
    "uploaderkeys" ) uploaderkeys ;;
    "backup" ) backup ;;
+   "backupsome" ) backupsome ;;
    "backupall" ) backupall ;;
+   "restoreon" ) restoreon ;;
    "reconnect" ) reconnect ;;
    "reconnectall") reconnectall ;;
    "showsystem") showsystem ;;
