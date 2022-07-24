@@ -1,0 +1,34 @@
+name: Get Changelog
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - master
+
+permissions: read-all
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      id-token: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.CR_PAT }}
+        fetch-depth: 0
+        clean: false
+
+    - name: Run Test & Get New Versions
+      run: |
+        echo "Run Changelog"
+        if test -f "./.github/changelog.sh"; then
+           bash "./.github/changelog.sh"
+        fi
+      env:
+        username: ${{ github.actor }}
+        token: ${{ secrets.CR_PAT }}
