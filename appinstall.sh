@@ -218,13 +218,13 @@ exit 0
 }
 
 function curlapp() {
-  appins=$appcurl
-  STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$app"/docker-compose.yml)
+  apppull=${apppull}
+  STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$apppull"/docker-compose.yml)
   if test $STATUSCODE -ne 200; then
-     progressfail "we could not found the DOCKER-COMPOSE for $app"
+     progressfail "we could not found the DOCKER-COMPOSE for $apppull"
   else
      make_dir "${pulls}"/"$app" && \
-     $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$app"/docker-compose.yml
+     $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$apppull"/docker-compose.yml
   fi
 }
 
@@ -425,31 +425,30 @@ function updatecontainer() {
 }
 
 function install() {
-  export ENV="/opt/appdata/compose/.env"
-  if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-  if [[ -d "${pulls}" ]]; then
-     for apps in ${app[@]} ; do
-         appcurl=$app
-         curlapp
-         if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
-            progress "install $app ....." 
-            if [[ $app == "mount" ]]; then
-               docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-               mountdrop
-            else
-               docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
-            fi
-            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
-            $(which rm) -rf "${pulls}"/"$app"
-         else
-            progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
-         fi
-     done
-  else
-     progressfail "no DOCKER-COMPOSE $app found on Remote repository || skipping ...."
-  fi
-  exit
+for app in ${app[@]};do
+    apppull=${app}
+    export ENV="/opt/appdata/compose/.env"
+    if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
+    if [[ -d "${pulls}" ]]; then
+       curlapp
+       if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
+          progress "install $app ....." 
+          if [[ $app == "mount" ]]; then
+             docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+             mountdrop
+          else
+             docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+          fi
+          docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+          docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+          $(which rm) -rf "${pulls}"/"$app"
+       else
+          progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
+       fi
+    else
+       progressfail "no DOCKER-COMPOSE $app found on Remote repository || skipping ...."
+    fi
+done
 }
 
 function usage() {
@@ -466,6 +465,7 @@ $(which cat) <<- EOF
   ## reconnectall     | reconnect all apps to proxy network
   ## updatecompose    | to update the local installed composer version
   ## updatecontainer  | to update all running dockers
+  ## debug            | debug app part
   #####
 EOF
 }
@@ -486,6 +486,7 @@ app=${@:2}
 
 case "$command" in
    "" ) exit ;;
+   "debug" ) debug ;;
    "usage" ) usage ;;
    "changes" ) changes ;;
    "install" ) install ;;
