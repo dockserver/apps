@@ -16,11 +16,10 @@
 
 export username=${username}
 export token=${token}
-touch ./USAGE.md
-touch ./CHANGELOG.md
 
-bash "./appinstall.sh" usage > ./USAGE.md
-bash "./appinstall.sh" changes > ./CHANGELOG.md
+bash "./appinstall.sh" usage > ./USAGE
+bash "./appinstall.sh" changes > ./CHANGELOG
+
 
 if [[ -n $(git status --porcelain) ]]; then
    git config --global user.name 'dockserver-bot[bot]'
