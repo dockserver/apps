@@ -204,7 +204,7 @@ echo -e "---------------------------------"
 echo -e "   Docker Container Part:"
 echo -e "---------------------------------"
 for id in `docker ps -q -f 'status=running' | cut -f2 -d\/ | sort -u`;do
-    for app in `$(which docker) inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
+    for app in `which docker inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
         echo -e "Docker     : $app is running"
     done
 done
