@@ -218,13 +218,13 @@ exit 0
 }
 
 function curlapp() {
-  apppull=${apppull}
-  STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$apppull"/docker-compose.yml)
+  apppull=$appstopull
+  STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$appstopull"/docker-compose.yml)
   if test $STATUSCODE -ne 200; then
-     progressfail "we could not found the DOCKER-COMPOSE for $apppull"
+     progressfail "we could not found the DOCKER-COMPOSE for $appstopull"
   else
      make_dir "${pulls}"/"$app" && \
-     $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$apppull"/docker-compose.yml
+     $(which curl) --silent --output "${pulls}"/"$appstopull"/docker-compose.yml ${source}/"$appstopull"/docker-compose.yml
   fi
 }
 
@@ -426,27 +426,27 @@ function updatecontainer() {
 
 function install() {
 for app in ${app[@]};do
-    apppull=${app}
+    echo $app
+    app=$apppull
+    apptoinstall=$app
     export ENV="/opt/appdata/compose/.env"
-    if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-    if [[ -d "${pulls}" ]]; then
-       curlapp
-       if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
-          progress "install $app ....." 
-          if [[ $app == "mount" ]]; then
-             docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-             mountdrop
-          else
-             docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
-          fi
-          docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-          docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
-          $(which rm) -rf "${pulls}"/"$app"
+    if [[ ! "$(docker compose version)" ]];then
+       updatecompose
+    fi
+    curlapp
+    if [[ -f "${pulls}/"$apptoinstall"/docker-compose.yml" ]]; then
+       progress "install $app ....." 
+       if [[ $app == "mount" ]]; then
+          docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+          mountdrop
        else
-          progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
+          docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto down
        fi
+       docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+       docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+       $(which rm) -rf "${pulls}"/"$apptoinstall"
     else
-       progressfail "no DOCKER-COMPOSE $app found on Remote repository || skipping ...."
+       progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
     fi
 done
 }
