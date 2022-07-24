@@ -451,6 +451,15 @@ for app in ${app[@]};do
 done
 }
 
+function debug() {
+
+for app in ${apps[@]};do
+    apppull=${apps}
+    app=$apps
+    echo $app
+    echo $apppull
+done
+}
 function usage() {
 $(which cat) <<- EOF
   ##### OPTIONS       | WHAT IT DOES
