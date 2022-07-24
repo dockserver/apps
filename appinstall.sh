@@ -220,52 +220,52 @@ exit 0
 }
 
 function curlapp() {
-  app=$i
-  STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$app"/docker-compose.yml)
+  APP=$APP
+  STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$APP"/docker-compose.yml)
   if test $STATUSCODE -ne 200; then
-     progressfail "we could not found the DOCKER-COMPOSE for $app"
+     progressfail "we could not found the DOCKER-COMPOSE for $APP"
   else
-     make_dir "${pulls}"/"$app" && \
-     $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$app"/docker-compose.yml
+     make_dir "${pulls}"/"$APP" && \
+     $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$APP"/docker-compose.yml
   fi
 }
 
 function backupSystem() {
-  app=system
+  APP=system
   backup
 }
 
 function backupall() {
-  for app in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
+  for APP in `$(which docker) inspect --format='{{.Name}}' $($(which docker) ps -q) | cut -f2 -d\/ | sort -u`;do
       backup
   done
   backupSystem
 }
 
 function backup() {
-  app=${app}
-  if [[ ! ${exclude[*]} =~ ${app} ]] && [[ -d "${appdata}/${app}" ]]; then
-     progress "Backing up now ${app} ..."
-     reqSpace=$($(which du) -s "${appdata}/${app}" | awk 'NR==1 {print $1}')
+  APP=${INSTAPP}
+  if [[ ! ${exclude[*]} =~ ${APP} ]] && [[ -d "${appdata}/${APP}" ]]; then
+     progress "Backing up now ${APP} ..."
+     reqSpace=$($(which du) -s "${appdata}/${APP}" | awk 'NR==1 {print $1}')
      availSpace=$($(which df) "${temp}" | awk 'NR==2 { print $4 }')
      OPTIONSTAR=""
      [[ -f "/opt/dockserver/apps/.backup/backup_excludes" ]] && OPTIONSTAR="--exclude-from=/opt/dockserver/apps/.backup/backup_excludes"
      if (( reqSpace < availSpace )); then
-        $(which tar) "${OPTIONSTAR}" -C "${appdata}/${app}" -pcf "${temp}/${app}".tar.gz ./
-        $(which rsync) -rv --chown=1000:1000 --exclude='*/' "${temp}/${app}".tar.gz "${backup}/${app}".tar.gz && \
-        $(which rm) -rf "${temp}/${app}".tar.gz
+        $(which tar) "${OPTIONSTAR}" -C "${appdata}/${APP}" -pcf "${temp}/${APP}".tar.gz ./
+        $(which rsync) -rv --chown=1000:1000 --exclude='*/' "${temp}/${APP}".tar.gz "${backup}/${APP}".tar.gz && \
+        $(which rm) -rf "${temp}/${APP}".tar.gz
      else
-        $(which tar) "${OPTIONSTAR}" -C "${appdata}/${app}" -pcf "${backup}/${app}".tar.gz ./
-        $(which chown) -cR 1000:1000 "${backup}/${app}".tar.gz
+        $(which tar) "${OPTIONSTAR}" -C "${appdata}/${APP}" -pcf "${backup}/${APP}".tar.gz ./
+        $(which chown) -cR 1000:1000 "${backup}/${APP}".tar.gz
      fi
-     [[ -f "${backup}/${app}.tar.gz" ]] && \
-        tarSize=$($(which du) -sh "${backup}/${app}".tar.gz | awk 'NR==1 { print $1 }') && \
-        progressdone "Backup of ${app} with ${tarSize} is done ..."
+     [[ -f "${backup}/${APP}.tar.gz" ]] && \
+        tarSize=$($(which du) -sh "${backup}/${APP}".tar.gz | awk 'NR==1 { print $1 }') && \
+        progressdone "Backup of ${APP} with ${tarSize} is done ..."
      [[ -f "${rcloneConf}rclone.conf" ]] && \
         rcloneSetRemote && \
         rcloneUpload
   else
-     progress "skipping ${app} is excluded or under ${appdata} the folder not exists ..."
+     progress "skipping ${APP} is excluded or under ${appdata} the folder not exists ..."
   fi
 }
 
@@ -286,30 +286,31 @@ function rcloneSetRemote() {
 function rcloneUpload() {
   for apprcup in copy move; do
       backupfolder=backup
-      if [[ $apprcup == move ]]; then backupfolder="${hostName}/backup" ; fi
-      progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
+      if [[ $apprcup == move ]]; then backupfolder="/${hostName}/backup" ; fi
+      progress "Uploading now ${APP}.tar.gz to ${remote} ..." && \
       $(which docker) run --rm \
          -v "${rcloneConf}:/config/rclone" \
          -v "${backup}:/data:shared" \
          --user 1000:1000 rclone/rclone \
-         $apprcup /data/${app}.tar.gz ${remote}${backup}/${app}.tar.gz -vP --stats=1s && \
-      progressdone "Uploading of ${app}.tar.gz is done"
+         $apprcup /data/${APP}.tar.gz ${remote}${backupfolder}/${APP}.tar.gz -vP --stats=1s && \
+      progressdone "Uploading of ${APP}.tar.gz is done"
   done
 }
 
 function rcloneDownload() {
-  progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
+  APP=${INSTAPP}
+  rcloneSetRemote
+  progress "Downloading now ${APP}.tar.gz from ${remote} ..." && \
       $(which docker) run --rm \
           -v "${rcloneConf}:/config/rclone" \
           -v "${backup}:/data:shared" \
           --user 1000:1000 rclone/rclone \
-          copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
-          -vP --stats=1s
-      [[ -f "${backup}/${app}.tar.gz" ]] && \
-          progressdone "downloading of ${app}.tar.gz is done" && \
+          copy ${remote}/backup/${APP}.tar.gz /data/${APP}.tar.gz -vP --stats=1s
+      [[ -f "${backup}/${APP}.tar.gz" ]] && \
+          progressdone "downloading of ${APP}.tar.gz is done" && \
           install
-      [[ ! -f "${backup}/${app}.tar.gz" ]] && \
-          progressfail "downloading of ${app}.tar.gz is failed"     
+      [[ ! -f "${backup}/${APP}.tar.gz" ]] && \
+          progressfail "downloading of ${APP}.tar.gz is failed"     
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
@@ -429,17 +430,17 @@ function updatecontainer() {
 }
 
 function install() {
-  app=${INSTAPP}
-  export ENV="/opt/appdata/compose/.env"
-  if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-     for i in ${app[@]} ; do
-      app=$i
+APP=${INSTAPP}
+export ENV="/opt/appdata/compose/.env"
+if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
+   for i in ${APP[@]} ; do
+      APP=$i
       curlapp
-      if [[ -f "${pulls}/"$i"/docker-compose.yml" ]]; then
-         progress "install $i ....." 
-         if [[ $i == "mount" ]]; then
+      if [[ -f "/tmp/pulls/"$i"/docker-compose.yml" ]]; then
+         progress "--> install $i <--"
+         if [[ $app == "mount" ]]; then
             docker compose -f "${pulls}"/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-            mountdrop
+             mountdrop
          else
             docker compose -f "${pulls}"/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto down
          fi
@@ -447,10 +448,10 @@ function install() {
          docker compose -f "${pulls}"/"$i"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
          $(which rm) -rf "${pulls}"/"$i"
       else
-         progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
+         progressfail "--> NO DOCKER-COMPOSE FOUND || EXIT <--"
       fi
-  done
-  exit
+   done
+exit
 }
 
 function usage() {
