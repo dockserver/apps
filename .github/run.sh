@@ -1,0 +1,33 @@
+#!/bin/bash
+####################################
+# All rights reserved.              #
+# started from Zero                 #
+# Docker owned dockserver           #
+# Docker Maintainer dockserver      #
+#####################################
+#####################################
+# THIS DOCKER IS UNDER LICENSE      #
+# NO CUSTOMIZING IS ALLOWED         #
+# NO REBRANDING IS ALLOWED          #
+# NO CODE MIRRORING IS ALLOWED      #
+#####################################
+# shellcheck disable=SC2086
+# shellcheck disable=SC2046
+
+export username=${username}
+export token=${token}
+touch ./USAGE.md
+touch ./CHANGELOG.md
+
+bash "./appinstall.sh" usage > ./USAGE.md
+bash "./appinstall.sh" changes > ./CHANGELOG.md
+
+if [[ -n $(git status --porcelain) ]]; then
+   git config --global user.name 'dockserver-bot[bot]'
+   git config --global user.email 'dockserver-bot[bot]@dockserver.io'
+   git add -A
+   git commit -sam "[Auto Generation] Changes" || exit 0
+   git push --force
+fi
+
+exit 0
