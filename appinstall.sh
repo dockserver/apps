@@ -425,41 +425,38 @@ function updatecontainer() {
 }
 
 function install() {
-for app in ${app[@]};do
-    echo $app
-    app=$apppull
-    apptoinstall=$app
-    export ENV="/opt/appdata/compose/.env"
-    if [[ ! "$(docker compose version)" ]];then
-       updatecompose
-    fi
-    curlapp
-    if [[ -f "${pulls}/"$apptoinstall"/docker-compose.yml" ]]; then
-       progress "install $app ....." 
-       if [[ $app == "mount" ]]; then
-          docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-          mountdrop
-       else
-          docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto down
-       fi
-       docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-       docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
-       $(which rm) -rf "${pulls}"/"$apptoinstall"
-    else
-       progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
-    fi
-done
+  for app in ${app[@]};do
+      echo $app
+      app=$apppull
+      apptoinstall=$app
+      export ENV="/opt/appdata/compose/.env"
+      if [[ ! "$(docker compose version)" ]];then
+         updatecompose
+      fi
+      curlapp
+      if [[ -f "${pulls}/"$apptoinstall"/docker-compose.yml" ]]; then
+         progress "install $app ....." 
+         if [[ $app == "mount" ]]; then
+            docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+            mountdrop
+         else
+            docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+         fi
+         docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+         docker compose -f "${pulls}"/"$apptoinstall"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+         $(which rm) -rf "${pulls}"/"$apptoinstall"
+      else
+         progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
+      fi
+  done
 }
 
 function debug() {
-
-for app in ${apps[@]};do
-    apppull=${apps}
-    app=$apps
-    echo $app
-    echo $apppull
-done
+  for app in ${app[@]};do
+      echo $app 
+  done
 }
+
 function usage() {
 $(which cat) <<- EOF
   ##### OPTIONS       | WHAT IT DOES
