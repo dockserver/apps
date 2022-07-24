@@ -62,9 +62,6 @@ $(which cat) <<- EOF
 ### END OF CHANGELOG 
 EOF
 }
-set -eo pipefail
-
-IFS=$'\n\t'
 
 ### DEFINE SOME VARS
 hostName="$(hostname)"
@@ -433,27 +430,23 @@ function install() {
   app=${app}
   export ENV="/opt/appdata/compose/.env"
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-  if [[ -d "${pulls}" ]]; then
-     for app in ${app[@]} ; do
-         curlapp
-         if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
-            progress "install $app ....." 
-            if [[ $app == "mount" ]]; then
-               docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-               mountdrop
-            else
-               docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
-            fi
-            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
-            $(which rm) -rf "${pulls}"/"$app"
+  for app in ${app[@]} ; do
+      curlapp
+      if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
+         progress "install $app ....." 
+         if [[ $app == "mount" ]]; then
+            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+            mountdrop
          else
-            progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
+            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
          fi
-     done
-  else
-     progressfail "no DOCKER-COMPOSE $app found on Remote repository || skipping ...."
-  fi
+         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+         $(which rm) -rf "${pulls}"/"$app"
+      else
+         progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
+      fi
+  done
   exit
 }
 
