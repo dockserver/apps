@@ -34,6 +34,11 @@ $(which cat) <<- EOF
 ##
 ##    SOME DEV NOTES FOR NEXT PARTS
 ## ------------------------------
+## VERSION 0.5 || 24/07/2022 GMT
+##    ADD make_dir and  checkcommand function
+##    ADD Uploaderkeys options [[ EXPERIMENTAL ]]
+##    FEATURE: cleanup script to use more functions
+##
 ## VERSION 0.4 || 18/07/2022 GMT
 ##    ADD DOCKER RECONNECT [[ JUST STOPPED/EXITES CONTAINERS ]]
 ##    ADD DOCKER RECONNECT ALL CONTAINERS
@@ -94,20 +99,123 @@ function progressfail() {
     $(which echo) -e "\e[0;91m[FAILED]\e[0m \e[1m$1\e[0m"
 }
 
-  #### LOOPING FOLDERS ####
-  for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
-      [[ -d "$folder" ]] && \
-         $(which chown) 1000:1000 "$folder"
-      [[ ! -d "$folder" ]] && \
-         progress "create now $folder" && \
-         $(which mkdir) -p "$folder" && \
-         $(which chown) 1000:1000 "$folder"
-  done
-  unset folder
-  for apts in tar curl wget pigz rsync; do
-      command -v ${apts} >/dev/null 2>&1 || { echo >&2 "We require ${apts} but it's not installed. Now we install ${apts}."; $(which apt) install -y ${apts}; }
-  done
-  unset apts
+function make_dir() {
+  if [[ ! -d "$1" ]]; then
+     $(which mkdir) -p "$1" && \          
+     progress "Folder not exist || create now %s" "$1" && \
+     $(which chown) 1000:1000 $1
+  else
+     progress "Folder exist || set now permissions on $1" && \
+     $(which chown) 1000:1000 "$1"
+  fi    
+}
+
+function command_exists() {
+  if ! [[ -x $(which "$1") ]]; then
+       progress "We require ${apts} but it's not installed." && \
+       progress "Now we install $1 " && \
+       $(which apt) install -y "$1" &>/dev/null
+  fi
+  return 0
+}
+
+## FROM YABS COPIED ##
+function format_size() {
+   RAW=$1 # mem size in KiB
+   RESULT=$RAW
+   local DENOM=1
+   local UNIT="KiB"
+   # ensure the raw value is a number, otherwise return blank
+   re='^[0-9]+$'
+   if ! [[ $RAW =~ $re ]] ; then
+      echo "" 
+      return 0
+   fi
+   if [ "$RAW" -ge 1073741824 ]; then
+      DENOM=1073741824
+      UNIT="TB"
+   elif [ "$RAW" -ge 1048576 ]; then
+        DENOM=1048576
+        UNIT="GB"
+   elif [ "$RAW" -ge 1024 ]; then
+        DENOM=1024
+        UNIT="MB"
+   fi
+   RESULT=$(awk -v a="$RESULT" -v b="$DENOM" 'BEGIN { print a / b }')
+   RESULT=$(echo $RESULT | awk -F. '{ printf "%0.1f",$1"."substr($2,1,2) }')
+   RESULT="$RESULT $UNIT"
+   echo $RESULT
+}
+
+## FROM YABS COPIED AND EXTENDED ##
+function showsystem() {
+# gather basic system information (inc. CPU, AES-NI/virt status, RAM + swap + disk size)
+echo -e "---------------------------------"
+echo -e "   Basic System Information:"
+echo -e "---------------------------------"
+UPTIME=$(uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7=="min") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print d+0,"days,",h+0,"hours,",m+0,"minutes"}')
+echo -e "Uptime     : $UPTIME"
+if [[ $ARCH = *aarch64* || $ARCH = *arm* ]]; then
+   CPU_PROC=$(lscpu | grep "Model name" | sed 's/Model name: *//g')
+else
+   CPU_PROC=$(awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//')
+fi
+echo -e "Processor  : $CPU_PROC"
+if [[ $ARCH = *aarch64* || $ARCH = *arm* ]]; then
+   CPU_CORES=$(lscpu | grep "^[[:blank:]]*CPU(s):" | sed 's/CPU(s): *//g')
+   CPU_FREQ=$(lscpu | grep "CPU max MHz" | sed 's/CPU max MHz: *//g')
+   [[ -z "$CPU_FREQ" ]] && CPU_FREQ="???"
+   CPU_FREQ="${CPU_FREQ} MHz"
+else
+   CPU_CORES=$(awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo)
+   CPU_FREQ=$(awk -F: ' /cpu MHz/ {freq=$2} END {print freq " MHz"}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//')
+fi
+echo -e "CPU cores  : $CPU_CORES @ $CPU_FREQ"
+CPU_AES=$(cat /proc/cpuinfo | grep aes)
+[[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
+echo -e "AES-NI     : $CPU_AES"
+CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
+[[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
+echo -e "VM-x/AMD-V : $CPU_VIRT"
+TOTAL_RAM=$(format_size $(free | awk 'NR==2 {print $2}'))
+echo -e "RAM        : $TOTAL_RAM"
+TOTAL_SWAP=$(format_size $(free | grep Swap | awk '{ print $2 }'))
+echo -e "Swap       : $TOTAL_SWAP"
+# total disk size is calculated by adding all partitions of the types listed below (after the -t flags)
+TOTAL_DISK=$(format_size $(df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }'))
+echo -e "Disk       : $TOTAL_DISK"
+DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
+echo -e "Distro     : $DISTRO"
+KERNEL=$(uname -r)
+echo -e "Kernel     : $KERNEL"
+DEVT=$(ls /dev/dri 1>/dev/null 2>&1 && echo active || echo not-avaible)
+if [[ $DEVT == active ]]; then
+   echo -e "/dev/dri   : is $DEVT"
+fi
+
+echo -e "---------------------------------"
+echo -e "   Docker Compose Part:"
+echo -e "---------------------------------"
+DCLOAL="$(docker compose version | awk 'NR==1 { print $4 }')"
+DCOMRENOTE="$($(which curl) -sX GET https://api.github.com/repos/docker/compose/releases/latest | jq --raw-output '.tag_name')"
+echo -e "LOCAL      : $DCLOAL"
+echo -e "REMOTE     : $DCOMRENOTE"
+echo -e "---------------------------------"
+echo -e "   Docker Container Part:"
+echo -e "---------------------------------"
+for id in `docker ps -q -f 'status=running' | cut -f2 -d\/ | sort -u`;do
+    for app in `$(which docker) inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
+        echo -e "Docker     : $app is running"
+    done
+done
+for id in `docker ps -q -f 'status=exited' -f 'status=dead' -f 'status=paused' -f 'exited=0') | cut -f2 -d\/ | sort -u`;do
+    for app in `docker inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
+        echo -e "Docker     : $app is not running"
+    done
+done
+echo -e "---------------------------------"
+exit 0 
+}
 
 function curlapp() {
   app=${app}
@@ -115,7 +223,7 @@ function curlapp() {
   if test $STATUSCODE -ne 200; then
      progressfail "we could not found the DOCKER-COMPOSE for $app"
   else
-     $(which mkdir) -p "${pulls}"/"$app" && \
+     make_dir "${pulls}"/"$app" && \
      $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$app"/docker-compose.yml
   fi
 }
@@ -191,16 +299,16 @@ function rcloneUpload() {
 function rcloneDownload() {
   progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
       $(which docker) run --rm \
-         -v "${rcloneConf}:/config/rclone" \
-         -v "${backup}:/data:shared" \
-         --user 1000:1000 rclone/rclone \
-         copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
-         -vP --stats-one-line --stats=1s
+          -v "${rcloneConf}:/config/rclone" \
+          -v "${backup}:/data:shared" \
+          --user 1000:1000 rclone/rclone \
+          copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz \
+          -vP --stats-one-line --stats=1s
       [[ -f "${backup}/${app}.tar.gz" ]] && \
-         progressdone "downloading of ${app}.tar.gz is done" && \
-         install
+          progressdone "downloading of ${app}.tar.gz is done" && \
+          install
       [[ ! -f "${backup}/${app}.tar.gz" ]] && \
-         progressfail "downloading of ${app}.tar.gz is failed"     
+          progressfail "downloading of ${app}.tar.gz is failed"     
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
@@ -221,8 +329,10 @@ function mountdrop() {
 
 function uploaderkeys() {
 
-$(which mkdir) -p "${appdata}/system/servicekeys" "${appdata}/system/gcloud"
-RUNCOMMAND="docker run -it -v "${appdata}/system/:/system"-v "${appdata}/system/gcloud:/root/.config/gcloud""
+make_dir "${appdata}/system/servicekeys"
+make_dir "${appdata}/system/gcloud"
+
+RUNCOMMAND="docker run -it -v "${appdata}/system/:/system" -v "${appdata}/system/gcloud:/root/.config/gcloud""
 ENV_VARS=("ACCOUNT" "PROJECT" "SANAME" "NUMGDSAS" "PROGNAME" "TEAMDRIVEID" "ENCRYPT" "PASSWORD" "SALT")
 for ENV_VAR in "${ENV_VARS[@]}"; do unset ${ENV_VAR} ; done
 for ENV_VAR in "${ENV_VARS[@]}"; do
@@ -239,26 +349,32 @@ for ENV_VAR in "${ENV_VARS[@]}"; do
 done
 
 RUNCOMMAND+=" ghcr.io/dockserver/docker-gdsa"
-RUNCOMMAND+=" /bin/bash gdsastart.sh"
+RUNCOMMAND+=" /bin/bash"
 
-${RUNCOMMAND}
+read -p "Type Y to continue " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+   ${RUNCOMMAND}
+else
+   exit 1
+fi
 
 }
 
 function reconnect() {
-  for id in `$($(which docker) ps -q -f 'status=exited' -f 'status=dead' -f 'exited=0') | cut -f2 -d\/ | sort -u`;do
-      for app in `$(which docker) inspect --format='{{.Name}}' $id`;do
+  for id in `docker ps -q -f 'status=exited' -f 'status=dead' -f 'exited=0') | cut -f2 -d\/ | sort -u`;do
+      for app in `docker inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
           progress "stopping now $app...." && \
           $(which docker) stop $app &>/dev/null
           if [[ $app == "mount" ]]; then
              mountdrop
           fi
           progress "drop $app from proxy network...." && \
-            $(which docker) network disconnect proxy $app &>/dev/null
+             $(which docker) network disconnect proxy $app &>/dev/null
           progress "reconnect $app to proxy network...." && \
-            $(which docker) network connect proxy $app &>/dev/null
+             $(which docker) network connect proxy $app &>/dev/null
           progress "docker start $app ...." && \
-            $(which docker) start $app &>/dev/null
+             $(which docker) start $app &>/dev/null
       done
   done
 }
@@ -293,7 +409,7 @@ function updatecompose() {
      $(which cp) -r $DOCKER_CONFIG/cli-plugins/docker-compose /usr/local/bin/docker-compose
   else
      sleep 5 ## wait time before next pull
-     $(which mkdir) -p $DOCKER_CONFIG/cli-plugins && \
+     make_dir $DOCKER_CONFIG/cli-plugins && \
      $(which curl) -fsSL https://github.com/docker/compose/releases/download/$VERSION/docker-compose-linux-`$(uname -m)` -o $DOCKER_CONFIG/cli-plugins/docker-compose && \
      $(which rm) -f /usr/bin/docker-compose /usr/local/bin/docker-compose && \
      $(which chmod) +x $DOCKER_CONFIG/cli-plugins/docker-compose && \
@@ -317,21 +433,21 @@ function install() {
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
   if [[ -d "${pulls}" ]]; then
      for app in ${app[@]} ; do
-        curlapp
-        if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
-           progress "install $app ....." 
-           if [[ $app == "mount" ]]; then
-              docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-              mountdrop
-           else
-              docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
-           fi
-           docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-           docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
-           $(which rm) -rf "${pulls}"/"$app"
-        else
-           progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
-        fi
+         curlapp
+         if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
+            progress "install $app ....." 
+            if [[ $app == "mount" ]]; then
+               docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+               mountdrop
+            else
+               docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+            fi
+            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+            $(which rm) -rf "${pulls}"/"$app"
+         else
+            progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
+         fi
      done
   else
      progressfail "no DOCKER-COMPOSE $app found on Remote repository || skipping ...."
@@ -358,6 +474,15 @@ EOF
 }
 
 #### FUNCTIONS END ####
+for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
+    make_dir "$folder"
+done
+unset folder
+for apts in tar curl wget pigz rsync; do
+    command_exists ${apts}
+done
+unset apts
+### COMMANDS ###
 
 command=$1
 app=${@:2}
@@ -368,10 +493,12 @@ case "$command" in
    "install" ) install ;;
    "updatecontainer" ) updatecontainer ;;
    "updatecompose" ) updatecompose ;;
+   "uploaderkeys" ) uploaderkeys ;;
    "backup" ) backup ;;
    "backupall" ) backupall ;;
    "reconnect" ) reconnect ;;
    "reconnectall") reconnectall ;;
+   "showsystem") showsystem ;;
 esac
 
 #/\E_O_F/\#
