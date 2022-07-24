@@ -241,6 +241,7 @@ function backupall() {
 }
 
 function backup() {
+  app=$app
   if [[ ! ${exclude[*]} =~ ${app} ]] && [[ -d "${appdata}/${app}" ]]; then
      progress "Backing up now ${app} ..."
      reqSpace=$($(which du) -s "${appdata}/${app}" | awk 'NR==1 {print $1}')
@@ -256,11 +257,11 @@ function backup() {
         $(which chown) -cR 1000:1000 "${backup}/${app}".tar.gz
      fi
      [[ -f "${backup}/${app}.tar.gz" ]] && \
-        tarSize=$($(which du) -sh "${backup}/${app}".tar.gz | awk 'NR==1 { print $1 }') && \
-        progressdone "Backup of ${app} with ${tarSize} is done ..."
+         tarSize=$($(which du) -sh "${backup}/${app}".tar.gz | awk 'NR==1 { print $1 }') && \
+         progressdone "Backup of ${app} with ${tarSize} is done ..."
      [[ -f "${rcloneConf}rclone.conf" ]] && \
-        rcloneSetRemote && \
-        rcloneUpload
+         rcloneSetRemote && \
+         rcloneUpload
   else
      progress "skipping ${app} is excluded or under ${appdata} the folder not exists ..."
   fi
@@ -328,23 +329,24 @@ function mountdrop() {
 
 function uploaderkeys() {
 
-make_dir "${appdata}/system/servicekeys"
-make_dir "${appdata}/system/gcloud"
-RUNCOMMAND="docker run -it -v "${appdata}/system/:/system" -v "${appdata}/system/gcloud:/root/.config/gcloud""
-ENV_VARS=("ACCOUNT" "PROJECT" "SANAME" "NUMGDSAS" "PROGNAME" "TEAMDRIVEID" "ENCRYPT" "PASSWORD" "SALT")
-for ENV_VAR in "${ENV_VARS[@]}"; do unset ${ENV_VAR} ; done
-for ENV_VAR in "${ENV_VARS[@]}"; do
-    if [[ -z ${!ENV_VAR} ]];then
-       read -erp "set now ${ENV_VAR} " typed </dev/tty
-       if [[ $typed == z ]] || [[ $typed == Z ]] || [[ $typed == EXIT ]] || [[ $typed == exit ]]; then
-          $(which echo) "exit now || you can rerun it ;)"
-       elif [[ $typed != "" ]];then
-          RUNCOMMAND+=" --env ${ENV_VAR}=$typed "
-       else
-          $(which echo) "${ENV_VAR} is not set"
-       fi
-    fi
-done
+  make_dir "${appdata}/system/servicekeys"
+  make_dir "${appdata}/system/gcloud"
+  RUNCOMMAND="docker run -it -v "${appdata}/system/:/system" -v "${appdata}/system/gcloud:/root/.config/gcloud""
+  ENV_VARS=("ACCOUNT" "PROJECT" "SANAME" "NUMGDSAS" "PROGNAME" "TEAMDRIVEID" "ENCRYPT" "PASSWORD" "SALT")
+  for ENV_VAR in "${ENV_VARS[@]}"; do unset ${ENV_VAR} ; done
+
+  for ENV_VAR in "${ENV_VARS[@]}"; do
+      if [[ -z ${!ENV_VAR} ]];then
+         read -erp "set now ${ENV_VAR} " typed </dev/tty
+         if [[ $typed == z ]] || [[ $typed == Z ]] || [[ $typed == EXIT ]] || [[ $typed == exit ]]; then
+            $(which echo) "exit now || you can rerun it ;)"
+         elif [[ $typed != "" ]];then
+            RUNCOMMAND+=" --env ${ENV_VAR}=$typed "
+         else
+            $(which echo) "${ENV_VAR} is not set"
+         fi
+      fi
+  done
 
 RUNCOMMAND+=" ghcr.io/dockserver/docker-gdsa"
 RUNCOMMAND+=" /bin/bash"
