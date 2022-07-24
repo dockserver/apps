@@ -208,7 +208,7 @@ for id in `docker ps -q -f 'status=running' | cut -f2 -d\/ | sort -u`;do
         echo -e "Docker     : $app is running"
     done
 done
-for id in `docker ps -q -f 'status=exited' -f 'status=dead' -f 'status=paused' -f 'exited=0') | cut -f2 -d\/ | sort -u`;do
+for id in `docker ps -q -f 'status=exited' -f 'status=dead' -f 'status=paused' -f 'exited=0' | cut -f2 -d\/ | sort -u`;do
     for app in `docker inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
         echo -e "Docker     : $app is not running"
     done
