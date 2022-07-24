@@ -218,7 +218,7 @@ exit 0
 }
 
 function curlapp() {
-  app=${app}
+  app=$app
   STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$app"/docker-compose.yml)
   if test $STATUSCODE -ne 200; then
      progressfail "we could not found the DOCKER-COMPOSE for $app"
@@ -241,7 +241,6 @@ function backupall() {
 }
 
 function backup() {
-  app=${app}
   if [[ ! ${exclude[*]} =~ ${app} ]] && [[ -d "${appdata}/${app}" ]]; then
      progress "Backing up now ${app} ..."
      reqSpace=$($(which du) -s "${appdata}/${app}" | awk 'NR==1 {print $1}')
@@ -331,7 +330,6 @@ function uploaderkeys() {
 
 make_dir "${appdata}/system/servicekeys"
 make_dir "${appdata}/system/gcloud"
-
 RUNCOMMAND="docker run -it -v "${appdata}/system/:/system" -v "${appdata}/system/gcloud:/root/.config/gcloud""
 ENV_VARS=("ACCOUNT" "PROJECT" "SANAME" "NUMGDSAS" "PROGNAME" "TEAMDRIVEID" "ENCRYPT" "PASSWORD" "SALT")
 for ENV_VAR in "${ENV_VARS[@]}"; do unset ${ENV_VAR} ; done
@@ -428,7 +426,6 @@ function updatecontainer() {
 }
 
 function install() {
-  app=${app}
   export ENV="/opt/appdata/compose/.env"
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
   if [[ -d "${pulls}" ]]; then
@@ -486,6 +483,7 @@ unset apts
 
 command=$1
 app=${@:2}
+
 case "$command" in
    "" ) exit ;;
    "usage" ) usage ;;
