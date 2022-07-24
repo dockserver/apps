@@ -429,11 +429,11 @@ function updatecontainer() {
 }
 
 function install() {
-  app=${app}
+  app=${INSTAPP}
   export ENV="/opt/appdata/compose/.env"
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
-  for i in ${app[@]} ; do
-      app=i
+     for i in ${app[@]} ; do
+      app=$i
       curlapp
       if [[ -f "${pulls}/"$i"/docker-compose.yml" ]]; then
          progress "install $i ....." 
@@ -483,7 +483,7 @@ unset apts
 ### COMMANDS ###
 
 command=$1
-app=${@:2}
+INSTAPP=${@:2}
 case "$command" in
    "" ) exit ;;
    "usage" ) usage ;;
