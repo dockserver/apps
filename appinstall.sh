@@ -101,7 +101,7 @@ function make_dir() {
   if [[ ! -d "$1" ]]; then
      $(which mkdir) -p "$1" && \
      progress "Folder not exist || create now %s" "$1" && \
-     $(which chown) 1000:1000 $1
+     $(which chown) 1000:1000 "$1"
   else
      progress "Folder exist || set now permissions on $1" && \
      $(which chown) 1000:1000 "$1"
