@@ -185,11 +185,14 @@ DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
 echo -e "Distro     : $DISTRO"
 KERNEL=$(uname -r)
 echo -e "Kernel     : $KERNEL"
-DEVT=$(ls /dev/dri 1>/dev/null 2>&1 && echo active || echo not-avaible)
-if [[ $DEVT == active ]]; then
-   echo -e "/dev/dri   : is $DEVT"
+if [ -d "/dev/dri" ]; then
+   for i in Intel NVIDIA;do
+       lspci | grep -i --color 'vga\|display\|3d\|2d' | grep -E $i | while read -r -a $i; do
+       echo -e "$i      : is activated"
+       done
+   done       
+   echo -e "/dev/dri   : is active"
 fi
-
 echo -e "---------------------------------"
 echo -e "   Docker Compose Part:"
 echo -e "---------------------------------"
@@ -225,6 +228,26 @@ function curlapp() {
      make_dir "${pulls}"/"$app" && \
      $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$app"/docker-compose.yml
   fi
+}
+
+function curlgpu() {
+app=${app}
+for i in Intel NVIDIA;do
+   lspci | grep -i --color 'vga\|display\|3d\|2d' | grep -E $i |while IFS= read -ra $i; do
+      if [[ $i == Intel ]] ; then
+         STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$app"/docker-compose.intel.yml)
+         if test $STATUSCODE == 200; then
+            $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.override.yml ${source}/"$app"/docker-compose.intel.yml
+         fi
+      fi
+      if [[ $i == NVIDIA ]] ; then
+         STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$app"/docker-compose.nvidia.yml)
+         if test $STATUSCODE == 200; then
+            $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.override.yml ${source}/"$app"/docker-compose.nvidia.yml
+         fi
+      fi
+   done
+done
 }
 
 function backupSystem() {
@@ -443,6 +466,7 @@ function install() {
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
   for app in ${app[@]} ; do
       curlapp
+      if [ -d "/dev/dri" ]; then curlgpu ; fi
       if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
          progress "install $app ....." 
          if [[ $app == "mount" ]]; then
@@ -451,8 +475,13 @@ function install() {
          else
             docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
          fi
-         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull
+         if [[ -f "${pulls}/"$app"/docker-compose.override.yml" ]]; then
+            progress "install $app with override composer ....." 
+            docker compose -f "${pulls}"/"$app"/docker-compose.yml -f "${pulls}"/"$app"/docker-compose.override.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
+         else
+            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
+         fi
          $(which rm) -rf "${pulls}"/"$app"
       else
          progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
