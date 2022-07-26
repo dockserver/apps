@@ -483,6 +483,7 @@ EOF
 }
 
 #### FUNCTIONS END ####
+if [[ $1 != usage ]]; then 
 for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
     make_dir "$folder"
 done
@@ -491,6 +492,7 @@ for apts in tar curl wget pigz rsync pv; do
     command_exists ${apts}
 done
 unset apts
+fi
 ### COMMANDS ###
 
 command=$1
