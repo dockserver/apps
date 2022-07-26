@@ -29,9 +29,11 @@ $(which cat) <<- EOF
 ##    ADD CONFIG BACKUP
 ##    RUN JSON2ENV TO WRITE JSON FILE FROM ENVIRONMENT [[ DOCKER RUN COMMAND ]]
 ##
-##    SOME DEV NOTES FOR NEXT PARTS
-##
+##    SOME DEV NOTES FOR NEXT PARTS 
 ## ------------------------------
+## VERSION 0.6 || 26/07/2022 GMT
+##    ADD GPU SUPPORT FOR INTEL AND NVIDIA
+##
 ## VERSION 0.5 || 24/07/2022 GMT
 ##    ADD make_dir and  checkcommand function
 ##    ADD RESTORE OPTION
@@ -511,6 +513,7 @@ $(which cat) <<- EOF
 EOF
 }
 
+if [[ $1 != usage ]]; then 
 #### FUNCTIONS END ####
 for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
     make_dir "$folder"
@@ -520,6 +523,7 @@ for apts in tar curl wget pigz rsync pv; do
     command_exists ${apts}
 done
 unset apts
+fi
 ### COMMANDS ###
 
 command=$1
