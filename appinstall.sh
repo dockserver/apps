@@ -513,8 +513,8 @@ $(which cat) <<- EOF
 EOF
 }
 
-if [[ $1 != usage ]]; then 
 #### FUNCTIONS END ####
+if [[ $1 != usage ]]; then 
 for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
     make_dir "$folder"
 done
