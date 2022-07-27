@@ -514,7 +514,7 @@ EOF
 }
 
 #### FUNCTIONS END ####
-if [ $1 != usage ] || [ $1 != changes ]; then 
+if [ $1 != usage ] && [ $1 != changes ]; then 
 for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
     make_dir "$folder"
 done
