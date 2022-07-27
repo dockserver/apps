@@ -1,13 +1,3 @@
-
-[1;31m[RUN][0m [1mFolder not exist || create now %s[0m
-
-[1;31m[RUN][0m [1mFolder not exist || create now %s[0m
-
-[1;31m[RUN][0m [1mFolder not exist || create now %s[0m
-
-[1;31m[RUN][0m [1mWe require pv but it's not installed.[0m
-
-[1;31m[RUN][0m [1mNow we install pv [0m
   ##### OPTIONS       | WHAT IT DOES
   ##
   ## usage            | shows the options / how to use

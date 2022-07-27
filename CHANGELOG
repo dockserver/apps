@@ -1,13 +1,3 @@
-
-[1;31m[RUN][0m [1mFolder exist || set now permissions on /tmp/docker_backup[0m
-
-[1;31m[RUN][0m [1mFolder exist || set now permissions on /opt/appdata[0m
-
-[1;31m[RUN][0m [1mFolder exist || set now permissions on /tmp/pulls[0m
-
-[1;31m[RUN][0m [1mWe require pv but it's not installed.[0m
-
-[1;31m[RUN][0m [1mNow we install pv [0m
 ## CHANGELOG ##
 ## PREVIEW OF VERSION 0.XXXX || DATE UNKNOWN YET GMT
 ## NEXT RELEASE WILL COVER :
