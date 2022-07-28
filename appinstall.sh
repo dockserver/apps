@@ -284,28 +284,29 @@ function rcloneSetRemote() {
 }
 
 function rcloneUpload() {
-  for apprcup in copy move; do
+  for apprcup in copyto moveto; do
       backupfolder=backup
       if [[ $apprcup == move ]]; then backupfolder="${hostName}/backup" ; fi
-      progress "Uploading now ${app}.tar.gz to ${remote} ..." && \
+      progress "Uploading now ${app}.tar.gz to ${remote}/${backupfolder} ..." && \
       $(which docker) run --rm \
          -v "${rcloneConf}:/config/rclone" \
          -v "${backup}:/data:shared" \
          --user 1000:1000 rclone/rclone \
-         $apprcup /data/${app}.tar.gz ${remote}/${backup}/${app}.tar.gz -vP --stats=1s && \
+         $apprcup /data/${app}.tar.gz ${remote}/${backupfolder}/${app}.tar.gz -vP --stats=1s && \
       progressdone "Uploading of ${app}.tar.gz is done"
   done
 }
 
 function rcloneDownload() {
   rcloneSetRemote
-  progress "Downloading now ${app}.tar.gz from ${remote} ..." && \
+  backupfolder=backup
+  progress "Downloading now ${app}.tar.gz from ${remote}/${backupfolder} ..." && \
        $(which docker) pull rclone/rclone &>/dev/null
        $(which docker) run --rm \
           -v "${rcloneConf}:/config/rclone" \
           -v "${backup}:/data:shared" \
           --user 1000:1000 rclone/rclone \
-          copy ${remote}/backup/${app}.tar.gz /data/${app}.tar.gz -vP --stats=1s
+          copyto ${remote}/${backupfolder}/${app}.tar.gz /data/${app}.tar.gz -vP --stats=1s
       [[ -f "${backup}/${app}.tar.gz" ]] && \
           progressdone "downloading of ${app}.tar.gz is done" && \
           make_dir "${appdata}/${app}" && \
