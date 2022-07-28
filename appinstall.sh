@@ -292,7 +292,7 @@ function rcloneUpload() {
          -v "${rcloneConf}:/config/rclone" \
          -v "${backup}:/data:shared" \
          --user 1000:1000 rclone/rclone \
-         $apprcup /data/${app}.tar.gz ${remote}/${backupfolder}/ -vP --stats=1s && \
+         $apprcup /data/${app}.tar.gz ${remote}/${backupfolder}/${app}.tar.gz -vP --stats=1s && \
       progressdone "Uploading of ${app}.tar.gz is done"
   done
 }
@@ -306,7 +306,7 @@ function rcloneDownload() {
           -v "${rcloneConf}:/config/rclone" \
           -v "${backup}:/data:shared" \
           --user 1000:1000 rclone/rclone \
-          copyto ${remote}/${backupfolder}/${app}.tar.gz /data/ -vP --stats=1s
+          copyto ${remote}/${backupfolder}/${app}.tar.gz /data/${app}.tar.gz -vP --stats=1s
       [[ -f "${backup}/${app}.tar.gz" ]] && \
           progressdone "downloading of ${app}.tar.gz is done" && \
           make_dir "${appdata}/${app}" && \
