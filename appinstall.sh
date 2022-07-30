@@ -31,8 +31,10 @@ $(which cat) <<- EOF
 ##
 ##    SOME DEV NOTES FOR NEXT PARTS 
 ## ------------------------------
-## VERSION 0.6 || 26/07/2022 GMT
+## VERSION 0.6 || 26+30/07/2022 GMT
 ##    ADD GPU SUPPORT FOR INTEL AND NVIDIA
+##    ADD REMOVE OPTION INC BACKUP BEFORE REMOCE FOLDER LOCAL
+##    DECLARE COMPOSER VERSION PART || OLD and NEW VERSION
 ##
 ## VERSION 0.5 || 24/07/2022 GMT
 ##    ADD make_dir and  checkcommand function
