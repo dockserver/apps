@@ -97,6 +97,11 @@ function progressfail() {
     $(which echo) -e "\e[0;91m[FAILED]\e[0m \e[1m$1\e[0m"
 }
 
+function progresswarn() {
+  $(which echo) && \
+    $(which echo) -e "\e[0;91m[WARNING]\e[0m \e[1m$1\e[0m"
+}
+
 function make_dir() {
   if [[ ! -d "$1" ]]; then
      $(which mkdir) -p "$1" && \
@@ -189,7 +194,6 @@ DEVT=$(ls /dev/dri 1>/dev/null 2>&1 && echo active || echo not-avaible)
 if [[ $DEVT == active ]]; then
    echo -e "/dev/dri   : is $DEVT"
 fi
-
 echo -e "---------------------------------"
 echo -e "   Docker Compose Part:"
 echo -e "---------------------------------"
@@ -264,9 +268,9 @@ function backup() {
      [[ -f "${rcloneConf}rclone.conf" ]] && \
         rcloneSetRemote && \
         rcloneUpload
-   else
+  else
      progress "skipping ${app} is excluded or under ${appdata} the folder not exists ..."
-   fi
+  fi
 }
 
 #### USE OFFICIAL IMAGE || NO CUSTOM IMAGE ####
@@ -378,9 +382,7 @@ function reconnect() {
       for app in `docker inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
           progress "stopping now $app...." && \
           $(which docker) stop $app &>/dev/null
-          if [[ $app == "mount" ]]; then
-             mountdrop
-          fi
+          if [[ $app == "mount" ]]; then mountdrop ; fi
           progress "drop $app from proxy network...." && \
              $(which docker) network disconnect proxy $app &>/dev/null
           progress "reconnect $app to proxy network...." && \
@@ -437,6 +439,37 @@ function updatecontainer() {
   exit
 }
 
+function remove() {
+  app=${app}
+    progresswarn " This will permanently remove the data and the ${app} ! Are you sure?"
+    read -erp "Continue (y/n)?" choice </dev/tty
+    case "$choice" in
+      y|Y|yes|YES )
+        curlapp
+        if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
+           progress "remove $app ....." 
+           if [[ $app == "mount" ]]; then
+              $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+              mountdrop
+           else
+              $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+           fi
+           $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto rm -fv && \
+           $(which rm) -rf "${pulls}"/"$app"
+           [[ -d "${appdata}/${app}" ]] && \
+              progress " We build before removing the data a backup for ${app}" && \
+              backup && \
+              $(which rm) -rf "${appdata}/${app}"
+        else
+           progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
+        fi
+        echo "remove performed and done for ${app}"
+        ;;
+      n|N|NO|no|exit ) echo "remove aborted" && exit 0 ;;
+      * ) echo "Invalid option supplied. Aborted remove." && exit 0 ;;
+    esac
+}
+
 function install() {
   app=${app}
   export ENV="/opt/appdata/compose/.env"
@@ -446,13 +479,13 @@ function install() {
       if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
          progress "install $app ....." 
          if [[ $app == "mount" ]]; then
-            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
             mountdrop
          else
-            docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
          fi
-         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-         docker compose -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
+         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
          $(which rm) -rf "${pulls}"/"$app"
       else
          progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
@@ -469,6 +502,7 @@ $(which cat) <<- EOF
   ## showsystem       | shows system status
   ## changes          | shows the changes on this file
   ## install          | to install one or more apps in loop
+  ## remove           | to remove the app and the folder
   ## backup           | to backup one app
   ## backupsome       | backup more as one app in loop
   ## backupall        | to backup all running dockers
@@ -484,14 +518,19 @@ EOF
 
 #### FUNCTIONS END ####
 if [ $1 != usage ] && [ $1 != changes ]; then 
-for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
-    make_dir "$folder"
-done
-unset folder
-for apts in tar curl wget pigz rsync pv; do
-    command_exists ${apts}
-done
-unset apts
+   for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
+       make_dir "$folder"
+   done
+   unset folder
+   for apts in tar curl wget pigz rsync pv; do
+       command_exists ${apts}
+   done
+   unset apts
+fi
+### SET COMPOSER PART IF USED OLD NEW VERSIONS ###
+DOCKER_COMPOSE="docker compose"
+if ! $DOCKER_COMPOSE > /dev/null 2>&1; then
+   DOCKER_COMPOSE="docker-compose"
 fi
 ### COMMANDS ###
 
@@ -502,6 +541,7 @@ case "$command" in
    "usage" ) usage ;;
    "changes" ) changes ;;
    "install" ) install ;;
+   "remove" ) remove ;;
    "updatecontainer" ) updatecontainer ;;
    "updatecompose" ) updatecompose ;;
    "uploaderkeys" ) uploaderkeys ;;
