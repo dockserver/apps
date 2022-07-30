@@ -473,19 +473,15 @@ function remove() {
       y|Y|yes|YES )
         curlapp
         if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
-           progress "remove $app ....." 
-           if [[ $app == "mount" ]]; then
-              $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-              mountdrop
-           else
-              $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
-           fi
+           progress "remove $app ....."
+           $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+           if [[ $app == "mount" ]]; then mountdrop ; fi
            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto rm -fv && \
-           $(which rm) -rf "${pulls}"/"$app"
            [[ -d "${appdata}/${app}" ]] && \
-              progress " We build before removing the data a backup for ${app}" && \
+              progress "We build a backup before removing the data from the host for ${app}" && \
               backup && \
               $(which rm) -rf "${appdata}/${app}"
+           [[ -d "${pulls}/${app}" ]] && $(which rm) -rf "${pulls}"/"$app"
         else
            progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
         fi
@@ -505,21 +501,20 @@ function install() {
       if [ -d "/dev/dri" ]; then curlgpu ; fi
       if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
          progress "install $app ....." 
-         if [[ $app == "mount" ]]; then
-            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-            mountdrop
-         else
-            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
-         fi
+         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+         if [[ $app == "mount" ]]; then mountdrop ; fi
+         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull
          if [[ -f "${pulls}/"$app"/docker-compose.override.yml" ]]; then
-            progress "install $app with override composer ....." 
+            progress "install $app with override composer ....." && \
+            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
             $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml -f "${pulls}"/"$app"/docker-compose.override.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
          else
+            progress "install $app ....." && \
+            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
             $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
          fi
-         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && && \
          $(which rm) -rf "${pulls}"/"$app"
+         progressdone " install ${app} .... successfully"
       else
          progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
       fi
