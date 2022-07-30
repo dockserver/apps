@@ -4,6 +4,7 @@
   ## showsystem       | shows system status
   ## changes          | shows the changes on this file
   ## install          | to install one or more apps in loop
+  ## remove           | to remove the app and the folder
   ## backup           | to backup one app
   ## backupsome       | backup more as one app in loop
   ## backupall        | to backup all running dockers
