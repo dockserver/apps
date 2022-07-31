@@ -30,10 +30,6 @@ services:
     extra_hosts:
       - "analytics.plex.tv:127.0.0.1"
       - "metrics.plex.tv:127.0.0.1"
-      - "metric.plex.tv:127.0.0.1"
-      - "mf.svc.nhl.com:127.0.0.1"
-      - "mlb-ws-mf.media.mlb.com:127.0.0.1"
-      - "playback.svcs.mlb.com:127.0.0.1"
     ports:
       - target: 32400
         published: 32400
@@ -42,8 +38,9 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "${APPFOLDER}/plex/database:/config:rw"
-      - "unionfs:/mnt:ro"
+      - "${APPFOLDER}/plex/transcode:/transcode:rw"
       - "/dev/shm:/ram_transcode:rw"
+      - "unionfs:/mnt:ro"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
