@@ -29,9 +29,13 @@ $(which cat) <<- EOF
 ##    ADD CONFIG BACKUP
 ##    RUN JSON2ENV TO WRITE JSON FILE FROM ENVIRONMENT [[ DOCKER RUN COMMAND ]]
 ##
-##    SOME DEV NOTES FOR NEXT PARTS
-##
+##    SOME DEV NOTES FOR NEXT PARTS 
 ## ------------------------------
+## VERSION 0.6 || 26+30/07/2022 GMT
+##    ADD GPU SUPPORT FOR INTEL AND NVIDIA
+##    ADD REMOVE OPTION INC BACKUP BEFORE REMOCE FOLDER LOCAL
+##    DECLARE COMPOSER VERSION PART || OLD and NEW VERSION
+##
 ## VERSION 0.5 || 24/07/2022 GMT
 ##    ADD make_dir and  checkcommand function
 ##    ADD RESTORE OPTION
@@ -190,9 +194,13 @@ DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
 echo -e "Distro     : $DISTRO"
 KERNEL=$(uname -r)
 echo -e "Kernel     : $KERNEL"
-DEVT=$(ls /dev/dri 1>/dev/null 2>&1 && echo active || echo not-avaible)
-if [[ $DEVT == active ]]; then
-   echo -e "/dev/dri   : is $DEVT"
+if [ -d "/dev/dri" ]; then
+   for i in Intel NVIDIA;do
+       lspci | grep -i --color 'vga\|display\|3d\|2d' | grep -E $i | while read -r -a $i; do
+       echo -e "$i      : is activated"
+       done
+   done       
+   echo -e "/dev/dri   : is active"
 fi
 echo -e "---------------------------------"
 echo -e "   Docker Compose Part:"
@@ -229,6 +237,26 @@ function curlapp() {
      make_dir "${pulls}"/"$app" && \
      $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.yml ${source}/"$app"/docker-compose.yml
   fi
+}
+
+function curlgpu() {
+app=${app}
+for i in Intel NVIDIA;do
+   lspci | grep -i --color 'vga\|display\|3d\|2d' | grep -E $i |while IFS= read -ra $i; do
+      if [[ $i == Intel ]] ; then
+         STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$app"/docker-compose.intel.yml)
+         if test $STATUSCODE == 200; then
+            $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.override.yml ${source}/"$app"/docker-compose.intel.yml
+         fi
+      fi
+      if [[ $i == NVIDIA ]] ; then
+         STATUSCODE=$($(which curl) --silent --output /dev/null --write-out "%{http_code}" ${source}/"$app"/docker-compose.nvidia.yml)
+         if test $STATUSCODE == 200; then
+            $(which curl) --silent --output "${pulls}"/"$app"/docker-compose.override.yml ${source}/"$app"/docker-compose.nvidia.yml
+         fi
+      fi
+   done
+done
 }
 
 function backupSystem() {
@@ -447,19 +475,15 @@ function remove() {
       y|Y|yes|YES )
         curlapp
         if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
-           progress "remove $app ....." 
-           if [[ $app == "mount" ]]; then
-              $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-              mountdrop
-           else
-              $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
-           fi
+           progress "remove $app ....."
+           $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+           if [[ $app == "mount" ]]; then mountdrop ; fi
            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto rm -fv && \
-           $(which rm) -rf "${pulls}"/"$app"
            [[ -d "${appdata}/${app}" ]] && \
-              progress " We build before removing the data a backup for ${app}" && \
+              progress "We build a backup before removing the data from the host for ${app}" && \
               backup && \
               $(which rm) -rf "${appdata}/${app}"
+           [[ -d "${pulls}/${app}" ]] && $(which rm) -rf "${pulls}"/"$app"
         else
            progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
         fi
@@ -476,17 +500,23 @@ function install() {
   if [[ ! "$(docker compose version)" ]]; then updatecompose ; fi
   for app in ${app[@]} ; do
       curlapp
+      if [ -d "/dev/dri" ]; then curlgpu ; fi
       if [[ -f "${pulls}/"$app"/docker-compose.yml" ]]; then
          progress "install $app ....." 
-         if [[ $app == "mount" ]]; then
-            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
-            mountdrop
+         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down && \
+         if [[ $app == "mount" ]]; then mountdrop ; fi
+         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull
+         if [[ -f "${pulls}/"$app"/docker-compose.override.yml" ]]; then
+            progress "install $app with override composer ....." && \
+            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml -f "${pulls}"/"$app"/docker-compose.override.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
          else
-            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto down
+            progress "install $app ....." && \
+            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
+            $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
          fi
-         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto pull && \
-         $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate && \
          $(which rm) -rf "${pulls}"/"$app"
+         progressdone " install ${app} .... successfully"
       else
          progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
       fi
