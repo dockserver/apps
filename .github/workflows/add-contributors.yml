@@ -1,0 +1,32 @@
+name: Add contributors
+
+on:
+  workflow_run:
+    workflows: ["Get Changes"]
+    types:
+      - completed
+
+jobs:
+  addcon:
+    name: Add all Contributors to ReadME
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - uses: BobAnkh/add-contributors@master
+        with:
+          REPO_NAME: 'dockserver/apps'
+          CONTRIBUTOR: '### Contributors'
+          COLUMN_PER_ROW: '4'
+          ACCESS_TOKEN: ${{secrets.CR_PAT}}
+          IMG_WIDTH: '50'
+          FONT_SIZE: '14'
+          PATH: '/README.md'
+          COMMIT_MESSAGE: 'docs(README): update contributors'
+          AVATAR_SHAPE: 'round'
