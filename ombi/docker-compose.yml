@@ -24,7 +24,7 @@ services:
       - "traefik.http.routers.ombi-rtr.rule=Host(`ombi.${DOMAIN}`)"
       - "traefik.http.routers.ombi-rtr.tls=true"
       - "traefik.http.routers.ombi-rtr.tls.certresolver=dns-cloudflare"
-      - "traefik.http.routers.ombi-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.ombi-rtr.middlewares=chain-no-auth@file"
       - "traefik.http.routers.ombi-rtr.service=ombi-svc"
       - "traefik.http.services.ombi-svc.loadbalancer.server.port=3579"
 networks:
