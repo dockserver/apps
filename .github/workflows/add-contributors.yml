@@ -1,10 +1,9 @@
 name: Add contributors
 
 on:
-  workflow_run:
-    workflows: ["Get Changes"]
-    types:
-      - completed
+  schedule:
+    - cron: '0 */1 * * * '
+  workflow_dispatch:
 
 jobs:
   addcon:
