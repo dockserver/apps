@@ -10,8 +10,8 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-      - "EDW_USERNAME="admin"
-      - "EDW_PASSWORD="admin"
+      - "EDW_USERNAME=admin"
+      - "EDW_PASSWORD=admin"
     image: "qfdk/easydockerweb"
     restart: "${RESTARTAPP}"
     networks:
