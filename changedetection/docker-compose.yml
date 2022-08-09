@@ -10,18 +10,19 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-    image: "dgtlmoon/changedetection.io"
+    image: "lscr.io/linuxserver/changedetection.io:latest"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}
     security_opt:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
     volumes:
-      - "${APPFOLDER}/changedetection:/datastore:rw"
+      - "${APPFOLDER}/changedetection:/config:rw"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      - "dockupdater.enable=true"
+      - "dockupdater.enable=true" ## Enable auto update docker
+      #- 'dockupdater.disable=false' ## Disable auto update docker
       - "traefik.http.routers.changedetection-rtr.entrypoints=https"
       - "traefik.http.routers.changedetection-rtr.rule=Host(`changedetection.${DOMAIN}`)"
       - "traefik.http.routers.changedetection-rtr.tls=true"
