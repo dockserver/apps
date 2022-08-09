@@ -516,7 +516,7 @@ function install() {
             $DOCKER_COMPOSE -f "${pulls}"/"$app"/docker-compose.yml --env-file="$ENV" --ansi=auto up -d --force-recreate
          fi
          $(which rm) -rf "${pulls}"/"$app"
-         progressdone " install ${app} .... successfully"
+         progressdone "install ${app} .... successfully"
       else
          progressfail "no DOCKER-COMPOSE found on Remote repository || exit ...."
       fi
