@@ -27,9 +27,6 @@ services:
       - ${DOCKERNETWORK}
     security_opt:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
-    extra_hosts:
-      - "analytics.plex.tv:127.0.0.1"
-      - "metrics.plex.tv:127.0.0.1"
     ports:
       - target: 32400
         published: 32400
@@ -49,7 +46,7 @@ services:
       - "traefik.http.routers.plex-rtr.rule=Host(`plex.${DOMAIN}`)"
       - "traefik.http.routers.plex-rtr.tls=true"
       - "traefik.http.routers.plex-rtr.tls.certresolver=dns-cloudflare"
-      - "traefik.http.routers.plex-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.plex-rtr.middlewares=no-auth@file"
       - "traefik.http.routers.plex-rtr.service=plex-svc"
       - "traefik.http.services.plex-svc.loadbalancer.server.scheme=https"
       - "traefik.http.services.plex-svc.loadbalancer.server.port=32400"
