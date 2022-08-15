@@ -216,16 +216,12 @@ echo -e "   Docker Container Part:"
 echo -e "---------------------------------"
 DEAD="\xE2\x9D\x8C dead"
 RUNI="\xE2\x9C\x94 running"
-for id in `docker ps -q -f 'status=running' | cut -f2 -d\/ | sort -u`;do
-    for app in `docker inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
-        echo -e "Docker     : $app $RUNI"
-    done
+for id in `docker ps -q --format='{{.Names}}' -f 'status=running' | cut -f2 -d\/ | sort -u`;do
+    echo -e "Docker     : $id $RUNI"
 done
 unset id
-for iddead in `docker ps -q -f 'status=exited' -f 'status=dead' -f 'status=paused' | cut -f2 -d\/ | sort -u`;do
-    for app in `docker inspect --format='{{.Name}}' $iddead| cut -f2 -d\/`;do
-        echo -e "Docker     : $app $DEAD"
-    done
+for iddead in `docker ps -q --format='{{.Names}}' -f 'status=exited' -f 'status=dead' -f 'status=paused' | cut -f2 -d\/ | sort -u`;do
+    echo -e "Docker     : $iddead $DEAD"
 done
 unset iddead
 echo -e "---------------------------------"
