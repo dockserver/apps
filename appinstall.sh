@@ -187,17 +187,17 @@ TOTAL_RAM=$(format_size $(free | awk 'NR==2 {print $2}'))
 TOTAL_URAM=$(format_size $(free | awk 'NR==3 {print $2}'))
 echo -e "RAM        : $TOTAL_URAM / $TOTAL_RAM"
 TOTAL_SWAP=$(format_size $(free | grep Swap | awk '{ print $2 }'))
-echo -e "Swap       : $TOTAL_SWAP"
+echo -e "SWAP       : $TOTAL_SWAP"
 # total disk size is calculated by adding all partitions of the types listed below (after the -t flags)
 TOTAL_DISK=$(format_size $(df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }'))
-echo -e "Disk       : $TOTAL_DISK"
+echo -e "DISK       : $TOTAL_DISK"
 DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
 echo -e "Distro     : $DISTRO"
 KERNEL=$(uname -r)
 echo -e "Kernel     : $KERNEL"
 if [ -d "/dev/dri" ]; then
+   GPUT="\xE2\x9C\x94 Enabled"
    for i in Intel NVIDIA;do
-       GPUT="\xE2\x9C\x94 Enabled"
        lspci | grep -i --color 'vga\|display\|3d\|2d' | grep -E $i | while read -r -a $i; do
        echo -e "$i      : $GPUT"
        done
@@ -214,15 +214,17 @@ echo -e "REMOTE     : $DCOMRENOTE"
 echo -e "---------------------------------"
 echo -e "   Docker Container Part:"
 echo -e "---------------------------------"
+DEAD="\xE2\x9D\x8C dead"
+RUNI="\xE2\x9C\x94 running"
 for id in `docker ps -q -f 'status=running' | cut -f2 -d\/ | sort -u`;do
     for app in `docker inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
-        echo -e "Docker     : $app is running"
+        echo -e "Docker     : $app $RUNI"
     done
 done
 unset id
 for iddead in `docker ps -q -f 'status=exited' -f 'status=dead' -f 'status=paused' | cut -f2 -d\/ | sort -u`;do
     for app in `docker inspect --format='{{.Name}}' $iddead| cut -f2 -d\/`;do
-        echo -e "Docker     : $app is not running"
+        echo -e "Docker     : $app $DEAD"
     done
 done
 unset iddead
