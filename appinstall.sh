@@ -184,7 +184,8 @@ CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
 [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
 echo -e "VM-x/AMD-V : $CPU_VIRT"
 TOTAL_RAM=$(format_size $(free | awk 'NR==2 {print $2}'))
-echo -e "RAM        : $TOTAL_RAM"
+TOTAL_URAM=$(format_size $(free | awk 'NR==3 {print $2}'))
+echo -e "RAM        : $TOTAL_URAM / $TOTAL_RAM"
 TOTAL_SWAP=$(format_size $(free | grep Swap | awk '{ print $2 }'))
 echo -e "Swap       : $TOTAL_SWAP"
 # total disk size is calculated by adding all partitions of the types listed below (after the -t flags)
@@ -196,11 +197,12 @@ KERNEL=$(uname -r)
 echo -e "Kernel     : $KERNEL"
 if [ -d "/dev/dri" ]; then
    for i in Intel NVIDIA;do
+       GPUT="\xE2\x9C\x94 Enabled"
        lspci | grep -i --color 'vga\|display\|3d\|2d' | grep -E $i | while read -r -a $i; do
-       echo -e "$i      : is activated"
+       echo -e "$i      : $GPUT"
        done
    done       
-   echo -e "/dev/dri   : is active"
+   echo -e "/dev/dri   : $GPUT"
 fi
 echo -e "---------------------------------"
 echo -e "   Docker Compose Part:"
