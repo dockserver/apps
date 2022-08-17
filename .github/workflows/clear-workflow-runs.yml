@@ -4,11 +4,9 @@
 name: Clear Workflow Runs CI
 
 on:
+  schedule:
+    - cron: '0 */6 * * * '
   workflow_dispatch:
-  workflow_run:
-    workflows: ["schedule"]
-    types:
-      - completed
 
 jobs:
   clear-workflow-runs:

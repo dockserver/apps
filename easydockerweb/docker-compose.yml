@@ -1,0 +1,37 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+  easydockerweb:
+    hostname: "easydockerweb"
+    container_name: "easydockerweb"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "EDW_USERNAME=admin"
+      - "EDW_PASSWORD=admin"
+    image: "qfdk/easydockerweb"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true" ## Enable auto update docker
+      - "traefik.http.routers.easydockerweb-rtr.entrypoints=https"
+      - "traefik.http.routers.easydockerweb-rtr.rule=Host(`easydockerweb.${DOMAIN}`)"
+      - "traefik.http.routers.easydockerweb-rtr.tls=true"
+      - "traefik.http.routers.easydockerweb-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.easydockerweb-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.easydockerweb-rtr.service=easydockerweb-svc"
+      - "traefik.http.services.easydockerweb-svc.loadbalancer.server.port=3000"
+networks:
+  proxy:
+    driver: bridge
+    external: true
