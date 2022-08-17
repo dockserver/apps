@@ -184,23 +184,25 @@ CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
 [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
 echo -e "VM-x/AMD-V : $CPU_VIRT"
 TOTAL_RAM=$(format_size $(free | awk 'NR==2 {print $2}'))
-echo -e "RAM        : $TOTAL_RAM"
+TOTAL_URAM=$(format_size $(free | awk 'NR==3 {print $2}'))
+echo -e "RAM        : $TOTAL_URAM / $TOTAL_RAM"
 TOTAL_SWAP=$(format_size $(free | grep Swap | awk '{ print $2 }'))
-echo -e "Swap       : $TOTAL_SWAP"
+echo -e "SWAP       : $TOTAL_SWAP"
 # total disk size is calculated by adding all partitions of the types listed below (after the -t flags)
 TOTAL_DISK=$(format_size $(df -t simfs -t ext2 -t ext3 -t ext4 -t btrfs -t xfs -t vfat -t ntfs -t swap --total 2>/dev/null | grep total | awk '{ print $2 }'))
-echo -e "Disk       : $TOTAL_DISK"
+echo -e "DISK       : $TOTAL_DISK"
 DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
 echo -e "Distro     : $DISTRO"
 KERNEL=$(uname -r)
 echo -e "Kernel     : $KERNEL"
 if [ -d "/dev/dri" ]; then
+   GPUT="\xE2\x9C\x94 Enabled"
    for i in Intel NVIDIA;do
        lspci | grep -i --color 'vga\|display\|3d\|2d' | grep -E $i | while read -r -a $i; do
-       echo -e "$i      : is activated"
+       echo -e "$i      : $GPUT"
        done
    done       
-   echo -e "/dev/dri   : is active"
+   echo -e "/dev/dri   : $GPUT"
 fi
 echo -e "---------------------------------"
 echo -e "   Docker Compose Part:"
@@ -212,16 +214,14 @@ echo -e "REMOTE     : $DCOMRENOTE"
 echo -e "---------------------------------"
 echo -e "   Docker Container Part:"
 echo -e "---------------------------------"
-for id in `docker ps -q -f 'status=running' | cut -f2 -d\/ | sort -u`;do
-    for app in `docker inspect --format='{{.Name}}' $id| cut -f2 -d\/`;do
-        echo -e "Docker     : $app is running"
-    done
+DEAD="\xE2\x9D\x8C dead"
+RUNI="\xE2\x9C\x94 running"
+for id in `docker ps -q --format='{{.Names}}' -f 'status=running' | cut -f2 -d\/ | sort -u`;do
+    echo -e "Docker     : $id $RUNI"
 done
 unset id
-for iddead in `docker ps -q -f 'status=exited' -f 'status=dead' -f 'status=paused' | cut -f2 -d\/ | sort -u`;do
-    for app in `docker inspect --format='{{.Name}}' $iddead| cut -f2 -d\/`;do
-        echo -e "Docker     : $app is not running"
-    done
+for iddead in `docker ps -q --format='{{.Names}}' -f 'status=exited' -f 'status=dead' -f 'status=paused' | cut -f2 -d\/ | sort -u`;do
+    echo -e "Docker     : $iddead $DEAD"
 done
 unset iddead
 echo -e "---------------------------------"
@@ -547,7 +547,7 @@ EOF
 }
 
 #### FUNCTIONS END ####
-if [ $1 != usage ] && [ $1 != changes ]; then 
+if [ $1 != usage ] && [ $1 != changes ] && [ $1 != showsystem ]; then 
    for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
        make_dir "$folder"
    done

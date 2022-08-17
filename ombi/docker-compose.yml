@@ -1,0 +1,33 @@
+---
+version: "3"
+services:
+  ombi:
+    hostname: "ombi"
+    container_name: "ombi"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+    image: "lscr.io/linuxserver/ombi:latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "${APPFOLDER}/ombi:/config:rw"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.ombi-rtr.entrypoints=https"
+      - "traefik.http.routers.ombi-rtr.rule=Host(`ombi.${DOMAIN}`)"
+      - "traefik.http.routers.ombi-rtr.tls=true"
+      - "traefik.http.routers.ombi-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.ombi-rtr.middlewares=chain-no-auth@file"
+      - "traefik.http.routers.ombi-rtr.service=ombi-svc"
+      - "traefik.http.services.ombi-svc.loadbalancer.server.port=3579"
+networks:
+  proxy:
+    driver: bridge
+    external: true

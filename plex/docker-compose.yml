@@ -27,9 +27,6 @@ services:
       - ${DOCKERNETWORK}
     security_opt:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
-    extra_hosts:
-      - "analytics.plex.tv:127.0.0.1"
-      - "metrics.plex.tv:127.0.0.1"
     ports:
       - target: 32400
         published: 32400
