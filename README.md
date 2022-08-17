@@ -4,7 +4,7 @@
 
 ## HOW TO USE [[ EASY AND SIMPLE MODE ]]
 ```sh
-printf "%s\n" "alias appinstall='curl -Ls https://app.dockserver.io >> /tmp/app && bash /tmp/app'" >> ~/.bashrc
+export alias appinstall='curl -s https://app.dockserver.io >> /tmp/app && bash /tmp/app' >> ~/.bashrc
 source ~/.bashrc
 
 ```
