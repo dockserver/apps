@@ -342,7 +342,7 @@ function rcloneDownload() {
       [[ -f "${backup}/${app}.tar.gz" ]] && \
           progressdone "downloading of ${app}.tar.gz is done" && \
           make_dir "${appdata}/${app}" && \
-          $(which unpigz) -dcqp 8 ${backup}/${app}.tar.gz | $(which pv) -pterb | $(which tar) pxf - -C "${appdata}/${app}" --strip-components=1
+          $(which pv) -pterb ${backup}/${app}.tar.gz | $(which tar) -xf - -C "${appdata}/${app}"
           install
           $(which rm) -rf ${backup}/${app}.tar.gz
       [[ ! -f "${backup}/${app}.tar.gz" ]] && \
