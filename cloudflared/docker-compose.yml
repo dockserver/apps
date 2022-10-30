@@ -6,7 +6,7 @@ services:
     image: "cloudflare/cloudflared:latest"
     hostname: "cloudflared"
     container_name: "cloudflared"
-    command: "tunnel --no-autoupdate run --token ${CLOUDFLARED_UUID}"
+    command: "tunnel --no-autoupdate --config=/home/nonroot/.cloudflared/config.yaml run"
     networks:
       - ${DOCKERNETWORK}
     environment:
@@ -20,4 +20,3 @@ networks:
   proxy:
     driver: bridge
     external: true
-
