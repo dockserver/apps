@@ -1,0 +1,28 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+  plex-credits-detect:
+    hostname: "plex-credits-detect"
+    container_name: "plex-credits-detect"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+    image: "cjmanca/plex-credits-detect:main"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "${APPFOLDER}/plex/database/Library/Application Support/Plex Media Server/Plug-in Support/Databases:/PlexDB"
+      - "${APPFOLDER}/plex-credits-detect/config:/config:rw"
+      - "/mnt/unionfs:/media"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+networks:
+  proxy:
+    driver: bridge
+    external: true
