@@ -1,0 +1,38 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+  wizarr:
+    hostname: "wizarr"
+    container_name: "wizarr"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "APP_URL=https://wizarr.${DOMAIN}"
+      - "DISABLE_BUILTIN_AUTH=false" #Set to true ONLY if you are using another auth provider (Authelia, Authentik, etc)
+      - "ALLOW_BUG_REPORTING=false" #Helps me fix bugs, but you can disable it if you want! I use Sentry.io for this.
+    image: "ghcr.io/wizarrrr/wizarr"
+    restart: "${RESTARTAPP}"
+    networks:
+      - "${DOCKERNETWORK}"
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "${APPFOLDER}/wizarr:/data/database:rw"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.wizarr-rtr.entrypoints=https"
+      - "traefik.http.routers.wizarr-rtr.rule=Host(`wizarr.${DOMAIN}`)"
+      - "traefik.http.routers.wizarr-rtr.tls=true"
+      - "traefik.http.routers.wizarr-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.wizarr-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.wizarr-rtr.service=wizarr-svc"
+      - "traefik.http.services.wizarr-svc.loadbalancer.server.port=5690"
+networks:
+  proxy:
+    driver: bridge
+    external: true
