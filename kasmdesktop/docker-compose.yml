@@ -2,39 +2,40 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
-  kasmdesktop:
-    hostname: "kasmdesktop"
-    container_name: "kasmdesktop"
+  kasm:
+    hostname: "kasm"
+    container_name: "kasm"
     environment:
       - "PGID=${ID}"
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-      - "VNC_PW=${VNC_PW}"
-      - "VNC_RESOLUTION=${VNC_RESOLUTION}"
-    image: "kasmweb/desktop-deluxe:1.9.0-rolling"
+    image: "'lscr.io/linuxserver/kasm:latest'"
     restart: "${RESTARTAPP}"
-    shm_size: "512m"
     networks:
       - ${DOCKERNETWORK}
+    ports:
+      - '3002:3000'
+      - '4443:4443'
     security_opt:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "${APPFOLDER}/kasmdesktop:/share:rw"
+      - "${APPFOLDER}/kasm:/opt:rw"
+      - "${APPFOLDER}/kasm/profiles:/profiles:rw"
       - "unionfs:/mnt:rw"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "dockupdater.enable=true"
-      - "traefik.http.routers.kasmdesktop-rtr.entrypoints=https"
-      - "traefik.http.routers.kasmdesktop-rtr.rule=Host(`kasmdesktop.${DOMAIN}`)"
-      - "traefik.http.routers.kasmdesktop-rtr.tls=true"
-      - "traefik.http.routers.kasmdesktop-rtr.tls.certresolver=dns-cloudflare"
-      - "traefik.http.routers.kasmdesktop-rtr.middlewares=chain-authelia@file"
-      - "traefik.http.routers.kasmdesktop-rtr.service=kasmdesktop-svc"
-      - "traefik.http.services.kasmdesktop-svc.loadbalancer.server.scheme=https"
-      - "traefik.http.services.kasmdesktop-svc.loadbalancer.server.port=6901"
+      - "traefik.http.routers.kasm-rtr.entrypoints=https"
+      - "traefik.http.routers.kasm-rtr.rule=Host(`kasm.${DOMAIN}`)"
+      - "traefik.http.routers.kasm-rtr.tls=true"
+      - "traefik.http.routers.kasm-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.kasm-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.kasm-rtr.service=kasm-svc"
+      - "traefik.http.services.kasm-svc.loadbalancer.server.scheme=https"
+      - "traefik.http.services.kasm-svc.loadbalancer.server.port=4443"
 networks:
   proxy:
     driver: bridge
