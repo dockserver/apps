@@ -69,6 +69,13 @@ Thanks goes to these wonderful people
 </tr>
 <tr>
     <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
+        <a href=https://github.com/justinglock40>
+            <img src=https://avatars.githubusercontent.com/u/23133649?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=justinglock40/>
+            <br />
+            <sub style="font-size:14px"><b>justinglock40</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
         <a href=https://github.com/ImgBotApp>
             <img src=https://avatars.githubusercontent.com/u/31427850?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Imgbot/>
             <br />
@@ -80,13 +87,6 @@ Thanks goes to these wonderful people
             <img src=https://avatars.githubusercontent.com/u/37595910?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Shayne/>
             <br />
             <sub style="font-size:14px"><b>Shayne</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
-        <a href=https://github.com/justinglock40>
-            <img src=https://avatars.githubusercontent.com/u/23133649?v=4 width="50;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=justinglock40/>
-            <br />
-            <sub style="font-size:14px"><b>justinglock40</b></sub>
         </a>
     </td>
     <td align="center" style="word-wrap: break-word; width: 75.0; height: 75.0">
