@@ -1,0 +1,44 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+  scrypted:
+    hostname: "scrypted"
+    container_name: "scrypted"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+      - "APP_URL=https://scrypted.${DOMAIN}"
+      - "DISABLE_BUILTIN_AUTH=false" #Set to true ONLY if you are using another auth provider (Authelia, Authentik, etc)
+      - "ALLOW_BUG_REPORTING=false" #Helps me fix bugs, but you can disable it if you want! I use Sentry.io for this.
+    image: "ghcr.io/koush/scrypted"
+    restart: "${RESTARTAPP}"
+    networks:
+      - "${DOCKERNETWORK}"
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "${APPFOLDER}/scrypted:/server/volume:rw"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "dockupdater.enable=true"
+      - "traefik.http.routers.scrypted-rtr.entrypoints=https"
+      - "traefik.http.routers.scrypted-rtr.rule=Host(`scrypted.${DOMAIN}`)"
+      - "traefik.http.routers.scrypted-rtr.tls=true"
+      - "traefik.http.routers.scrypted-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.scrypted-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.scrypted-rtr.service=scrypted-svc"
+      - "traefik.http.services.scrypted-svc.loadbalancer.server.scheme=https"
+      - "traefik.http.services.scrypted-svc.loadbalancer.server.port=10443"
+    logging:
+        driver: "json-file"
+        options:
+            max-size: "10m"
+            max-file: "10"
+networks:
+  proxy:
+    driver: bridge
+    external: true

@@ -342,7 +342,7 @@ function rcloneDownload() {
       [[ -f "${backup}/${app}.tar.gz" ]] && \
           progressdone "downloading of ${app}.tar.gz is done" && \
           make_dir "${appdata}/${app}" && \
-          $(which unpigz) -dcqp 8 ${backup}/${app}.tar.gz | $(which pv) -pterb | $(which tar) pxf - -C "${appdata}/${app}" --strip-components=1
+          $(which pv) -pterb ${backup}/${app}.tar.gz | $(which tar) -xf - -C "${appdata}/${app}"
           install
           $(which rm) -rf ${backup}/${app}.tar.gz
       [[ ! -f "${backup}/${app}.tar.gz" ]] && \
@@ -547,7 +547,7 @@ EOF
 }
 
 #### FUNCTIONS END ####
-if [ $1 != usage ] && [ $1 != changes ] && [ $1 != showsystem ]; then 
+if [ "$1" != usage ] && [ "$1" != changes ] && [ "$1" != showsystem ]; then 
    for folder in ${temp} ${backup} ${appdata} ${restore} ${pulls}; do
        make_dir "$folder"
    done

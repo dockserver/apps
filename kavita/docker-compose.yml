@@ -1,0 +1,41 @@
+---
+version: "3.9"
+## SET GLOBAL HEADER FOR COMPOSER
+services:
+  kavita:
+    hostname: "kavita"
+    container_name: "kavita"
+    environment:
+      - "PGID=${ID}"
+      - "PUID=${ID}"
+      - "TZ=${TZ}"
+      - "UMASK=${UMASK}"
+    image: "kizaing/kavita:latest"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
+    volumes:
+      - "${APPFOLDER}/kavita:/kavita/config:rw"
+      - "unionfs:/mnt"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - 'dockupdater.enable=true'
+      - "traefik.http.routers.kavita-rtr.entrypoints=https"
+      - "traefik.http.routers.kavita-rtr.rule=Host(`kavita.${DOMAIN}`)"
+      - "traefik.http.routers.kavita-rtr.tls=true"
+      - "traefik.http.routers.kavita-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.kavita-rtr.middlewares=chain-authelia@file"
+      - "traefik.http.routers.kavita-rtr.service=kavita-svc"
+      - "traefik.http.services.kavita-svc.loadbalancer.server.port=5000"
+networks:
+  proxy:
+    driver: bridge
+    external: true
+volumes:
+  unionfs:
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt
