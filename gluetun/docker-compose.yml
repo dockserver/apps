@@ -2,11 +2,14 @@
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
+  gluetun:
     hostname: "gluetun"
     container_name: "gluetun"
-    image: qmcgaw/gluetun
+    image: "qmcgaw/gluetun:latest"
     cap_add:
       - NET_ADMIN
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}
@@ -20,8 +23,12 @@ services:
       - "OPENVPN_USER=${GLUETUN_OPEN_VPN_USER}"
       - "OPENVPN_PASSWORD=${GLUETUN_OPEN_VPN_PASSWORD}"
       - "REGION=${GLUETUN_VPN_REGION}"
+      - "SHADOWSOCKS=on"
+      - "SHADOWSOCKS_ADDRESS=:8388"
+      - "HTTPPROXY=on"
+      - "HTTPPROXY_LISTENING_ADDRESS=:8888"
     volumes:
-      - "${APPFOLDER}/gluetun/:/gluetun"
+      - "${APPFOLDER}/gluetun/:/gluetun:rw"
 networks:
   proxy:
     driver: bridge
