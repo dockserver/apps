@@ -3,19 +3,23 @@ version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
 services:
   cloudflared:
-    image: "cloudflare/cloudflared:latest"
     hostname: "cloudflared"
     container_name: "cloudflared"
-    command: "tunnel --no-autoupdate --config=/home/nonroot/.cloudflared/config.yaml run"
-    networks:
-      - ${DOCKERNETWORK}
     environment:
       - "PGID=${ID}"
       - "PUID=${ID}"
       - "TZ=${TZ}"
+    image: "cloudflare/cloudflared:latest"
+    command: "tunnel --no-autoupdate --config=/home/nonroot/.cloudflared/config.yaml run"
+    restart: "${RESTARTAPP}"
+    networks:
+      - ${DOCKERNETWORK}
+    security_opt:
+      - "${SECURITYOPS}:${SECURITYOPSSET}"
     volumes:
       - "${APPFOLDER}/cloudflared:/home/nonroot/.cloudflared:rw"
-    restart: always
+    labels:
+      - "dockupdater.enable=true"
 networks:
   proxy:
     driver: bridge
