@@ -10,7 +10,7 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-    image: "revenz/fenrus"
+    image: "revenz/fenrus:latest"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}
