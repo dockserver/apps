@@ -10,7 +10,8 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-    image: "ghcr.io/dockserver/docker-duplicati:latest"
+      - "DOCKER_MODS=ghcr.io/dockserver/docker-mod-rclone:latest"
+    image: "lscr.io/linuxserver/duplicati:latest"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}
