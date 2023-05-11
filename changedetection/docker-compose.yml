@@ -10,14 +10,14 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-    image: "dgtlmoon/changedetection.io"
+    image: "lscr.io/linuxserver/changedetection.io:latest"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}
     security_opt:
       - "${SECURITYOPS}:${SECURITYOPSSET}"
     volumes:
-      - "${APPFOLDER}/changedetection:/datastore:rw"
+      - "${APPFOLDER}/changedetection:/config:rw"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
