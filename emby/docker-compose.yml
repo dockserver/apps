@@ -5,7 +5,7 @@ services:
   emby:
     hostname: "emby"
     container_name: "emby"
-    image: "${EMBYIMAGE}"
+    image: "lscr.io/linuxserver/emby:latest"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}
@@ -16,7 +16,7 @@ services:
       - "PGID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-      - "DOCKER_MODS=ghcr.io/gilbn/theme.park:emby"
+      - "DOCKER_MODS=ghcr.io/gilbn/theme.park:emby|ghcr.io/dockserver/docker-mod-healthcheck:latest"
       - "TP_THEME=${EMBYTHEME}"
       ##- "NVIDIA_VISIBLE_DEVICES=all"
       ##- "NVIDIA_DRIVER_CAPABILITIES=all"

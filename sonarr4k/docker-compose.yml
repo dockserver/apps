@@ -10,10 +10,10 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-      - "DOCKER_MODS=ghcr.io/gilbn/theme.park:sonarr"
+      - "DOCKER_MODS=ghcr.io/gilbn/theme.park:sonarr|ghcr.io/dockserver/docker-mod-healthcheck:latest"
       - "TP_THEME=${SONARR4KTHEME}"
       - "TP_ADDON=sonarr-4k-logo"
-    image: "${SONARR4KIMAGE}"
+    image: "lscr.io/linuxserver/sonarr:latest"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}

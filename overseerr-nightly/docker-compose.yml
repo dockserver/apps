@@ -9,7 +9,7 @@ services:
       - "PGID=${ID}"
       - "PUID=${ID}"
       - "TZ=${TZ}"
-    image: "lscr.io/linuxserver/overseerr:latest"
+    image: "lscr.io/linuxserver/overseerr:develop"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}

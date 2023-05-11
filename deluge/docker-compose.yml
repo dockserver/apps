@@ -13,7 +13,7 @@ services:
       - "DELUGE_LOGLEVEL=error"
       - "DOCKER_MODS=ghcr.io/gilbn/theme.park:deluge"
       - "TP_THEME=${DELUGETHEME}"
-    image: "${DELUGEIMAGE}"
+    image: "lscr.io/linuxserver/deluge:latest"
     networks:
       - ${DOCKERNETWORK}
     restart: "${RESTARTAPP}"

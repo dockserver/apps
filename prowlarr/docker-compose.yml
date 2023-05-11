@@ -12,7 +12,7 @@ services:
       - "UMASK=${UMASK}"
       - "DOCKER_MODS=ghcr.io/gilbn/theme.park:prowlarr"
       - "TP_THEME=${PROWLARRTHEME}"
-    image: "${PROWLARRIMAGE}"
+    image: "lscr.io/linuxserver/prowlarr:latest"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}

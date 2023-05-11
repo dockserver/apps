@@ -10,7 +10,7 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-    image: "ghcr.io/dockserver/docker-dash:latest"
+    image: "mauricenino/dashdot"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}

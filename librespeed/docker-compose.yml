@@ -4,7 +4,7 @@ version: "3.9"
 services:
   librespeed:
     hostname: "librespeed"
-    image: "lscr.io/linuxserver/librespeed"
+    image: "lscr.io/linuxserver/librespeed:latest"
     container_name: "librespeed"
     restart: "${RESTARTAPP}"
     environment:

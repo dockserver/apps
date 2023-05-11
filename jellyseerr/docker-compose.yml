@@ -9,7 +9,7 @@ services:
       - "PGID=${ID}"
       - "PUID=${ID}"
       - "TZ=${TZ}"
-    image: "ghcr.io/dockserver/docker-jellyseerr:latest"
+    image: "fallenbagel/jellyseerr"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}

@@ -10,10 +10,10 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-      - "DOCKER_MODS=ghcr.io/gilbn/theme.park:bazarr"
+      - "DOCKER_MODS=ghcr.io/gilbn/theme.park:bazarr|ghcr.io/dockserver/docker-mod-healthcheck:latest"
       - "TP_THEME=${BAZARR4KTHEME}"
       - "TP_ADDON=bazarr-4k-logo"
-    image: "${BAZARR4KIMAGE}"
+    image: "lscr.io/linuxserver/bazarr:latest"
     restart: "${RESTARTAPP}"
     networks:
       - "${DOCKERNETWORK}"

@@ -10,7 +10,7 @@ services:
       - "PUID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-    image: "lscr.io/linuxserver/nzbhydra2"
+    image: "lscr.io/linuxserver/nzbhydra2:latest"
     restart: "${RESTARTAPP}"
     networks:
       - "proxy"
