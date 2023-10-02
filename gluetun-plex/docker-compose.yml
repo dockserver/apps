@@ -1,6 +1,7 @@
 ---
 version: "3.9"
 ## SET GLOBAL HEADER FOR COMPOSER
+## Mullvad Config example
 services:
   gluetun:
     hostname: "gluetun"
@@ -25,55 +26,17 @@ services:
       - "PGID=${ID}"
       - "TZ=${TZ}"
       - "UMASK=${UMASK}"
-      - "VPN_SERVICE_PROVIDER=xxxxxxxx"
-      - "VPN_TYPE=xxxxxxx"
+      - "VPN_SERVICE_PROVIDER=mullvad"
+      - "VPN_TYPE=wireguard"
+      - "WIREGUARD_PRIVATE_KEY=xxxxxPRIVATEKEYxxxxxx"
+      - "WIREGUARD_ADDRESSES=10.64.89.118/32"
+      - "SERVER_CITIES=Frankfurt"
+      - "OWNED_ONLY=yes"
       - "HTTPPROXY=on"
       - "HTTPPROXY_LISTENING_ADDRESS=:8888"
     volumes:
       - "${APPFOLDER}/gluetun/:/gluetun:rw"
-  plex:
-    hostname: "plex"
-    container_name: "plex"
-    environment:
-      - "PGID=${ID}"
-      - "PUID=${ID}"
-      - "TZ=${TZ}"
-      - "UMASK=${UMASK}"
-      - "PLEX_CLAIM=PLEX_CLAIM_ID"
-      - "VERSION=${PLEXVERSION}"
-      - "ADVERTISE_IP=https://plex.${DOMAIN}:443"
-      - "DOCKER_MODS=ghcr.io/gilbn/theme.park:plex|ghcr.io/dockserver/docker-mod-healthcheck:latest"
-      - "TP_THEME=${PLEXTHEME}"
-      - "TP_ADDON=${PLEXADDON}"
-    image: "${PLEXIMAGE}"
-    restart: "${RESTARTAPP}"
-    depends_on: gluetun
-    network_mode: "container:gluetun"
-    security_opt:
-      - "${SECURITYOPS}:${SECURITYOPSSET}"
-    volumes:
-      - "/etc/localtime:/etc/localtime:ro"
-      - "${APPFOLDER}/plex/database:/config:rw"
-      - "unionfs:/mnt:ro"
-      - "/dev/shm:/ram_transcode:rw"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "dockupdater.enable=true"
-      - "traefik.http.routers.plex-rtr.entrypoints=https"
-      - "traefik.http.routers.plex-rtr.rule=Host(`plex.${DOMAIN}`)"
-      - "traefik.http.routers.plex-rtr.tls=true"
-      - "traefik.http.routers.plex-rtr.tls.certresolver=dns-cloudflare"
-      - "traefik.http.routers.plex-rtr.middlewares=chain-authelia@file"
-      - "traefik.http.routers.plex-rtr.service=plex-svc"
-      - "traefik.http.services.plex-svc.loadbalancer.server.scheme=https"
-      - "traefik.http.services.plex-svc.loadbalancer.server.port=32400"
 networks:
   proxy:
     driver: bridge
     external: true
-volumes:
-  unionfs:
-    driver: local-persist
-    driver_opts:
-      mountpoint: /mnt
