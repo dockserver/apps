@@ -36,7 +36,7 @@ services:
 
     restart: "${RESTARTAPP}"
 
-    network_mode: "container:gluetun"
+    network_mode: "service:gluetun"
 
     security_opt:
 
