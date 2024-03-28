@@ -7,7 +7,7 @@ services:
     container_name: "homepage"
     environment:
       - "TZ=${TZ}"
-    image: "ghcr.io/benphelps/homepage:latest"
+    image: "ghcr.io/gethomepage/homepage:latest"
     restart: "${RESTARTAPP}"
     networks:
       - ${DOCKERNETWORK}
